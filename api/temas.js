@@ -1,14 +1,14 @@
-import { get, set, sadd, smembers, cors } from './lib/kv.js';
-import { v4 as uuid } from 'uuid';
+const { get, set, sadd, smembers, cors } = require('./lib/kv');
+const { v4: uuid } = require('uuid');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
     const { firmaId } = req.query;
     if (!firmaId) return res.status(400).json({ error: 'firmaId gerekli.' });
-    const ids = await smembers(`temas:firma:${firmaId}`) || [];
+    const ids = await smembers(`temas:firma:${firmaId}`);
     const temas = await Promise.all(ids.map(id => get(`temas:${id}`)));
     return res.json(temas.filter(Boolean).sort((a, b) => b.tarih.localeCompare(a.tarih)));
   }
@@ -20,7 +20,6 @@ export default async function handler(req, res) {
     const temas = { id, firma_id, tarih, kanal, kisi: kisi||'', kisi_tel: kisi_tel||'', kisi_eposta: kisi_eposta||'', yapan_kisi: yapan_kisi||'', yapan_tel: yapan_tel||'', yapan_eposta: yapan_eposta||'', ozet, sonuc: sonuc||'beklemede', olusturma: new Date().toISOString() };
     await set(`temas:${id}`, temas);
     await sadd(`temas:firma:${firma_id}`, id);
-    // Update son_temas on firma
     const firma = await get(`firma:${firma_id}`);
     if (firma && (!firma.son_temas || tarih > firma.son_temas)) {
       await set(`firma:${firma_id}`, { ...firma, son_temas: tarih });
@@ -29,4 +28,4 @@ export default async function handler(req, res) {
   }
 
   res.status(405).end();
-}
+};
