@@ -9,10 +9,20 @@ async function kv(method, ...args) {
   return data.result;
 }
 
-export const get = (key) => kv('get', key);
+export const get = async (key) => {
+  const result = await kv('get', key);
+  if (result === null || result === undefined) return null;
+  if (typeof result === 'string') {
+    try { return JSON.parse(result); } catch { return result; }
+  }
+  return result;
+}
 export const set = (key, value) => kv('set', key, JSON.stringify(value));
 export const del = (key) => kv('del', key);
-export const smembers = (key) => kv('smembers', key);
+export const smembers = async (key) => {
+  const result = await kv('smembers', key);
+  return Array.isArray(result) ? result : [];
+}
 export const sadd = (key, member) => kv('sadd', key, member);
 export const srem = (key, member) => kv('srem', key, member);
 
