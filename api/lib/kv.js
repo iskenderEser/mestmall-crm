@@ -9,7 +9,7 @@ async function kv(method, ...args) {
   return data.result;
 }
 
-export const get = async (key) => {
+async function get(key) {
   const result = await kv('get', key);
   if (result === null || result === undefined) return null;
   if (typeof result === 'string') {
@@ -17,17 +17,32 @@ export const get = async (key) => {
   }
   return result;
 }
-export const set = (key, value) => kv('set', key, JSON.stringify(value));
-export const del = (key) => kv('del', key);
-export const smembers = async (key) => {
+
+async function set(key, value) {
+  return kv('set', key, JSON.stringify(value));
+}
+
+async function del(key) {
+  return kv('del', key);
+}
+
+async function smembers(key) {
   const result = await kv('smembers', key);
   return Array.isArray(result) ? result : [];
 }
-export const sadd = (key, member) => kv('sadd', key, member);
-export const srem = (key, member) => kv('srem', key, member);
 
-export function cors(res) {
+async function sadd(key, member) {
+  return kv('sadd', key, member);
+}
+
+async function srem(key, member) {
+  return kv('srem', key, member);
+}
+
+function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
+
+module.exports = { get, set, del, smembers, sadd, srem, cors };
