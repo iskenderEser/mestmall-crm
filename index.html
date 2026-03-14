@@ -423,7 +423,7 @@ async function showDetail(id){
   DB.activeFirmaId=id;
   document.getElementById('det-title').textContent=f.ad;
   document.getElementById('det-badge').innerHTML=badge(f.durum);
-  document.getElementById('det-actions').innerHTML='<button class="btn btn-sm" onclick="openFirmaModal('+JSON.stringify(id)+')">Düzenle</button><button class="btn btn-sm btn-red" onclick="confirmDeleteFirma('+JSON.stringify(id)+')">Sil</button>';
+  document.getElementById('det-actions').innerHTML='<button class="btn btn-sm" onclick="openFirmaModal(\''+id+'\')">Düzenle</button><button class="btn btn-sm btn-red" onclick="confirmDeleteFirma(\''+id+'\')">Sil</button>';  
   renderDetailBody(f);
 }
 
