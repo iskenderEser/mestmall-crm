@@ -1,15 +1,16 @@
-import { get, set, sadd, smembers, cors } from './lib/kv.js';
-import { v4 as uuid } from 'uuid';
+const { get, set, sadd, smembers, cors } = require('./lib/kv');
+const { v4: uuid } = require('uuid');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
-    const ids = await smembers('firma:ids') || [];
+    const ids = await smembers('firma:ids');
     if (!ids.length) return res.json([]);
     const firmalar = await Promise.all(ids.map(id => get(`firma:${id}`)));
-    return res.json(firmalar.filter(Boolean).sort((a, b) => a.ad.localeCompare(b.ad, 'tr')));
+    const temiz = firmalar.filter(f => f && f.ad).sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+    return res.json(temiz);
   }
 
   if (req.method === 'POST') {
@@ -23,4 +24,4 @@ export default async function handler(req, res) {
   }
 
   res.status(405).end();
-}
+};
