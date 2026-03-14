@@ -1,5 +1,5 @@
-import { get, set, sadd, smembers } from './lib/kv.js';
-import { v4 as uuid } from 'uuid';
+const { get, set, sadd, smembers } = require('./lib/kv');
+const { v4: uuid } = require('uuid');
 
 const SEED = [
   {ad:'Abbvie',web:'abbvie.com',telefon:'',eposta:'',referans_kisi:'',odak_kisi:'',urun_notlari:'Botox, HarmonyCa, Juvederm',durum:'baslanmadi'},
@@ -53,13 +53,13 @@ const SEED = [
   {ad:'Hybrexo',web:'',telefon:'',eposta:'',referans_kisi:'',odak_kisi:'',urun_notlari:'Ürün girişi yapılacak',durum:'baslanmadi'}
 ];
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   const secret = req.headers['x-seed-secret'];
   if (secret !== process.env.SEED_SECRET) return res.status(401).json({ error: 'Unauthorized' });
 
-  const existing = await smembers('firma:ids') || [];
-  if (existing.length > 0) return res.status(400).json({ error: 'Zaten seed edilmiş. Tekrar çalıştırmak için KV\'yi temizleyin.' });
+  const existing = await smembers('firma:ids');
+  if (existing.length > 0) return res.status(400).json({ error: 'Zaten seed edilmiş.' });
 
   for (const s of SEED) {
     const id = uuid();
@@ -69,4 +69,4 @@ export default async function handler(req, res) {
   }
 
   return res.json({ ok: true, count: SEED.length });
-}
+};
