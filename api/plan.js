@@ -1,6 +1,6 @@
-import { get, set, cors } from './lib/kv.js';
+const { get, set, cors } = require('./lib/kv');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -14,4 +14,4 @@ export default async function handler(req, res) {
   }
 
   res.status(405).end();
-}
+};
