@@ -122,16 +122,81 @@ textarea{resize:vertical;min-height:80px}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats .stat:nth-child(3){display:none}
 }
+
+.login-overlay{display:none;position:fixed;inset:0;background:#f3f4f6;z-index:1000;align-items:center;justify-content:center;padding:16px}
+.login-overlay.show{display:flex}
+.login-wrap{width:100%;max-width:400px}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:22px;font-weight:600;color:#111;margin-bottom:4px}
+.login-logo p{font-size:13px;color:#6b7280}
+.login-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:28px 24px}
+.login-err{background:#fcebeb;color:#a32d2d;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+.login-fg{margin-bottom:16px}
+.login-fg label{display:block;font-size:12px;font-weight:500;color:#6b7280;margin-bottom:6px}
+.login-fg input{width:100%;padding:10px 14px;font-size:14px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#111;outline:none}
+.login-fg input:focus{border-color:#1d9e75;box-shadow:0 0 0 3px #1d9e7520}
+.login-btn{width:100%;padding:11px;background:#1d9e75;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
+.login-btn:hover{background:#0f6e56}
+.login-btn:disabled{opacity:.6;cursor:not-allowed}
+.sifre-overlay{display:none;position:fixed;inset:0;background:#f3f4f6;z-index:1001;align-items:center;justify-content:center;padding:16px}
+.sifre-overlay.show{display:flex}
 </style>
 </head>
 <body>
- 
+
+
+<div class="login-overlay show" id="login-overlay">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <h1>MestMall CRM</h1>
+      <p>Hedef firma yönetimi</p>
+    </div>
+    <div class="login-card">
+      <div class="login-err" id="login-err"></div>
+      <div class="login-fg">
+        <label>Cep telefonu</label>
+        <input type="tel" id="login-tel" placeholder="05320000000">
+      </div>
+      <div class="login-fg">
+        <label>Şifre</label>
+        <input type="password" id="login-sifre" placeholder="••••••••">
+      </div>
+      <button class="login-btn" id="login-btn" onclick="girisYap()">Giriş Yap</button>
+    </div>
+  </div>
+</div>
+
+<div class="sifre-overlay" id="sifre-overlay">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <h1>Şifre Değiştir</h1>
+      <p>İlk girişiniz. Lütfen yeni şifrenizi belirleyin.</p>
+    </div>
+    <div class="login-card">
+      <div class="login-err" id="sifre-err"></div>
+      <div class="login-fg">
+        <label>Yeni şifre (en az 6 karakter)</label>
+        <input type="password" id="yeni-sifre" placeholder="Yeni şifreniz">
+      </div>
+      <div class="login-fg">
+        <label>Yeni şifre tekrar</label>
+        <input type="password" id="yeni-sifre2" placeholder="Şifrenizi tekrar girin">
+      </div>
+      <button class="login-btn" onclick="sifreDegistir()">Şifremi Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <div id="root">
- 
+
 <div id="page-list" class="screen active app">
   <div class="topbar">
     <div><h1>MestMall CRM</h1><p>Hedef firma yönetimi</p></div>
-    <button class="btn btn-green" onclick="openFirmaModal(null)">+ Yeni firma</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="user-ad" style="font-size:12px;color:#6b7280"></span>
+      <button class="btn btn-green" onclick="openFirmaModal(null)">+ Yeni firma</button>
+      <button class="btn" onclick="cikisYap()" style="font-size:12px">Çıkış</button>
+    </div>
   </div>
   <div class="stats" id="stats-row"></div>
   <div class="toolbar">
@@ -142,10 +207,11 @@ textarea{resize:vertical;min-height:80px}
     <button class="filt" data-d="iletisimde" onclick="setFilter(this)">İletişimde</button>
     <button class="filt" data-d="olumsuz" onclick="setFilter(this)">Ulaşılamadı</button>
     <button class="filt" data-d="baslanmadi" onclick="setFilter(this)">Başlanmadı</button>
+    <button class="filt" data-d="planli" onclick="setFilter(this)" id="filt-planli" style="position:relative">📅 Planlı<span id="plan-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#a32d2d;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px;line-height:16px"></span></button>
   </div>
   <div class="grid" id="firma-grid"></div>
 </div>
- 
+
 <div id="page-detail" class="screen app detail-page">
   <div class="back-bar">
     <button class="btn btn-sm" onclick="showPage('list')">← Geri</button>
@@ -155,7 +221,7 @@ textarea{resize:vertical;min-height:80px}
   </div>
   <div class="detail-body" id="detail-body"></div>
 </div>
- 
+
 <div class="overlay" id="firma-modal">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head"><h2 id="fmodal-title">Yeni firma ekle</h2><button class="xbtn" onclick="closeModal('firma-modal')">&times;</button></div>
@@ -166,6 +232,7 @@ textarea{resize:vertical;min-height:80px}
         <div class="fg"><label>Web sitesi</label><input id="f-web" placeholder="www.firma.com"></div>
         <div class="fg"><label>Telefon</label><input id="f-tel" placeholder="0212 000 00 00"></div>
       </div>
+      <div class="fg"><label>E-posta</label><input id="f-eposta" type="email" placeholder="info@firma.com"></div>
       <div class="frow">
         <div class="fg"><label>Referans kişi</label><input id="f-ref" placeholder="Ad soyad"></div>
         <div class="fg"><label>Odak kişi</label><input id="f-odak" placeholder="Ad, unvan"></div>
@@ -187,24 +254,36 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 </div>
- 
+
 <div class="overlay" id="temas-modal">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head"><h2 id="tmodal-title">Yeni temas kaydı</h2><button class="xbtn" onclick="closeModal('temas-modal')">&times;</button></div>
     <div class="modal-body">
       <div id="temas-err" style="display:none" class="errmsg"></div>
-      <div class="frow">
-        <div class="fg"><label>Tarih</label><input type="date" id="t-tarih"></div>
-        <div class="fg"><label>Kanal</label>
-          <select id="t-kanal">
-            <option value="telefon">Telefon</option>
-            <option value="eposta">E-posta</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="ziyaret">Ziyaret</option>
-          </select>
+      <div class="fg"><label>Tarih</label><input type="date" id="t-tarih" style="max-width:180px"></div>
+      <div class="fg">
+        <label>Kanal (birden fazla seçilebilir)</label>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="t-kanal-telefon"> Telefon</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="t-kanal-eposta"> E-posta</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="t-kanal-whatsapp"> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="t-kanal-ziyaret"> Ziyaret</label>
         </div>
       </div>
-      <div class="fg"><label>Görüşülen kişi</label><input id="t-kisi" placeholder="Ad, unvan"></div>
+      <div class="frow">
+        <div class="fg" style="border-right:1px solid #f0f0f0;padding-right:12px">
+          <label style="font-size:11px;font-weight:700;color:#1d9e75;margin-bottom:8px;display:block">GÖRÜŞÜLEN (Firma)</label>
+          <div class="fg"><label>Ad Soyad</label><input id="t-kisi" placeholder="Ad Soyad, Unvan"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-kisi-tel" placeholder="0532 000 00 00"></div>
+          <div class="fg"><label>E-posta</label><input id="t-kisi-eposta" type="email" placeholder="ali@firma.com"></div>
+        </div>
+        <div class="fg">
+          <label style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:8px;display:block">GÖRÜŞEN (Ekip)</label>
+          <div class="fg"><label>Ad Soyad</label><input id="t-yapan-kisi" placeholder="Ad Soyad"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-yapan-tel" placeholder="0532 000 00 00"></div>
+          <div class="fg"><label>E-posta</label><input id="t-yapan-eposta" type="email" placeholder="siz@mestmall.com"></div>
+        </div>
+      </div>
       <div class="fg"><label>Görüşme özeti *</label><textarea id="t-ozet" placeholder="Ne konuşuldu, ne söylendi..."></textarea></div>
       <div class="fg"><label>Sonuç</label>
         <select id="t-sonuc">
@@ -214,7 +293,6 @@ textarea{resize:vertical;min-height:80px}
           <option value="olumsuz">Olumsuz</option>
         </select>
       </div>
-      <div class="fg"><label>Sonraki adım</label><input id="t-adim" placeholder="16.03.2026'da tekrar ara..."></div>
       <div class="factions">
         <button class="btn" onclick="closeModal('temas-modal')">İptal</button>
         <button class="btn btn-green" onclick="saveTemas()">Kaydet</button>
@@ -222,100 +300,396 @@ textarea{resize:vertical;min-height:80px}
     </div>
   </div>
 </div>
- 
+
+<div class="overlay" id="plan-modal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head"><h2>Sonraki iletişim planı</h2><button class="xbtn" onclick="closeModal('plan-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div id="plan-err" style="display:none" class="errmsg"></div>
+      <div class="fg"><label>Kiminle</label><input id="p-kisi" placeholder="Ad Soyad, Unvan"></div>
+      <div class="fg"><label>Randevu tarihi *</label><input type="date" id="p-tarih"></div>
+      <div class="fg">
+        <label>İletişim kanalı</label>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-telefon"> Telefon</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-eposta"> E-posta</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-whatsapp"> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-ziyaret"> Ziyaret</label>
+        </div>
+      </div>
+      <div class="factions">
+        <button class="btn" onclick="closeModal('plan-modal')">İptal</button>
+        <button class="btn btn-green" onclick="savePlan()">Kaydet</button>
+      </div>
+    </div>
+  </div>
 </div>
- 
+
+</div>
+
 <script>
-var DB={firmalar:[],temas:[],editFirmaId:null,editTemasId:null,activeFirmaId:null,activeFilter:'tumu',_fid:1000,_tid:2000,newFirmaId(){return ++this._fid},newTemasId(){return ++this._tid}};
-var SEED=[
-  {ad:'Abbvie',web:'abbvie.com',telefon:'',referans_kisi:'',odak_kisi:'',urun_notlari:'Botox, HarmonyCa, Juvederm',durum:'baslanmadi'},
-  {ad:'ATT Medikal',web:'www.att.com.tr',telefon:'444 06 25',referans_kisi:'',odak_kisi:'',urun_notlari:'Cihaz',durum:'baslanmadi'},
-  {ad:'Bellamono',web:'www.bellamono.com',telefon:'542 269 20 67',referans_kisi:'',odak_kisi:'',urun_notlari:'',durum:'olumsuz'},
-  {ad:'Biotech',web:'www.biotechhealthcare.com.tr',telefon:'',referans_kisi:'',odak_kisi:'',urun_notlari:"TR bağlantısı yok, İsviçre'ye mesaj atılıyor",durum:'iletisimde'},
-  {ad:'Bolat Medikal',web:'bolatmedikal.com',telefon:'0212 424 19 75',referans_kisi:'',odak_kisi:'',urun_notlari:'',durum:'iletisimde'},
-  {ad:'Burgeon',web:'burgeon.me',telefon:'0312 405 80 69',referans_kisi:'',odak_kisi:'Aylin Hanım (Pazarlama)',urun_notlari:'Kendi web satış kanalları var. Kayıt çok başarılı',durum:'olumlu'},
-  {ad:'DFL',web:'dfl.com.tr',telefon:'0312 495 06 40',referans_kisi:'',odak_kisi:'Sertaç Bahar (Genel Md.)',urun_notlari:'Skinfill dolgu ürünleri',durum:'olumsuz'},
-  {ad:'Dosa Medikal',web:'dosamedikal.com',telefon:'0212 812 66 68',referans_kisi:'',odak_kisi:'Mehmet Bey',urun_notlari:'Mezoterapi ürünleri',durum:'beklemede'},
-  {ad:'Elasty (MEDICALINE)',web:'elastyturkiye.com',telefon:'0212 238 73 50',referans_kisi:'',odak_kisi:'Halil Kara (Marka Müd.)',urun_notlari:'',durum:'beklemede'},
-  {ad:'Erdağı Medikal',web:'erdagimedikal.com',telefon:'0533 342 24 53',referans_kisi:'',odak_kisi:'Gökberk Bey',urun_notlari:'',durum:'beklemede'},
-  {ad:'Estetik Dermal',web:'estetikdermal.com',telefon:'0256 612 18 13',referans_kisi:'',odak_kisi:'Özge Hanım',urun_notlari:"RRS-HA ve 6 farklı marka, Aydın firması",durum:'iletisimde'},
-  {ad:'Gen İlaç',web:'genilac.com.tr',telefon:'0532 287 07 19',referans_kisi:'',odak_kisi:'Erkan Erzi (Ticaret Müd.)',urun_notlari:'Dysport',durum:'iletisimde'},
-  {ad:'Genotek',web:'genotekpharma.com',telefon:'0312 514 83 10',referans_kisi:'',odak_kisi:'Hakan Şahin (Dijital Paz.)',urun_notlari:'Jalupro',durum:'iletisimde'},
-  {ad:'Koçyiğit Medikal',web:'kocyigitmedikal.com.tr',telefon:'0216 574 39 61',referans_kisi:'',odak_kisi:'',urun_notlari:'Çeşitli cihazlar',durum:'baslanmadi'},
-  {ad:'Lagoom Medikal',web:'lagoom.com.tr',telefon:'0216 472 13 14',referans_kisi:'',odak_kisi:'Mustafa Karagözlü (Owner)',urun_notlari:'Aquashine ve birçok ürün',durum:'beklemede'},
-  {ad:'Live Pharma',web:'livepharma.com.tr',telefon:'0212 319 18 22',referans_kisi:'',odak_kisi:'',urun_notlari:'Nucleofill ve birçok ürün',durum:'olumsuz'},
-  {ad:'Magic Medikal',web:'magicmedikal.com',telefon:'0532 419 23 26',referans_kisi:'',odak_kisi:'',urun_notlari:'3 çeşit dolgu ve kanül',durum:'baslanmadi'},
-  {ad:'Mezoklinik',web:'mezoklinik.com.tr',telefon:'0212 438 40 20',referans_kisi:'',odak_kisi:'Alp Bey',urun_notlari:'Verimli görüşme, çok ilgilendi',durum:'iletisimde'},
-  {ad:'Naturamed BMS',web:'naturamedbms.net',telefon:'0312 473 77 14',referans_kisi:'',odak_kisi:'Çağan Elgün (Owner)',urun_notlari:'Innea Aqua',durum:'beklemede'},
-  {ad:'Nebs Pharma',web:'nebs.com.tr',telefon:'0212 465 60 65',referans_kisi:'',odak_kisi:'',urun_notlari:'NCTF ve Fillmed distribütörü',durum:'olumsuz'},
-  {ad:'Neva Farma',web:'nevafarma.com',telefon:'0535 717 74 75',referans_kisi:'',odak_kisi:'Ebru Gökçen',urun_notlari:'Neauvia Türkiye satıcısı',durum:'iletisimde'},
-  {ad:'Nortechpharma',web:'nortechpharma.com',telefon:'0552 732 06 15',referans_kisi:'Kendim',odak_kisi:'Emel Özgen (Marka Müd.) / Oral Kızılşık (Owner)',urun_notlari:'Mezoterapi ürünleri',durum:'beklemede'},
-  {ad:'Nurederm',web:'nurederm.com',telefon:'0850 255 15 90',referans_kisi:'Kudret / Dr. Ayşegül',odak_kisi:'',urun_notlari:'Çoklu ürünler, kendi sipariş web ve app',durum:'iletisimde'},
-  {ad:'Ortadoğu Medikal',web:'ortadoguas.com',telefon:'0212 277 90 90',referans_kisi:'',odak_kisi:'',urun_notlari:'Cihaz satıyorlar',durum:'baslanmadi'},
-  {ad:'Östafarma Medical',web:'ostafarma.com',telefon:'0216 629 75 64',referans_kisi:'',odak_kisi:'Ali İhsan Ateş (Şirket Sahibi)',urun_notlari:'Çeşitli ürünler, ihracat yapıyorlar',durum:'iletisimde'},
-  {ad:'Rebe Medikal',web:'rebemedikal.com',telefon:'0505 153 10 92',referans_kisi:'',odak_kisi:'Mustafa Bey (Sahibi)',urun_notlari:'Sarf malzeme ve çoklu ürün',durum:'olumlu'},
-  {ad:'Reganyal',web:'regenyaltr.com',telefon:'0530 604 28 17',referans_kisi:'',odak_kisi:'Taylan Altuncuoğlu',urun_notlari:'',durum:'iletisimde'},
-  {ad:'Renée Türkiye',web:'reneeturkiye.com',telefon:'0312 285 64 66',referans_kisi:'',odak_kisi:'',urun_notlari:'',durum:'olumsuz'},
-  {ad:'Revoderm',web:'revodermpharma.com',telefon:'0535 105 94 04',referans_kisi:'',odak_kisi:'Gökhan Yavuz (Owner)',urun_notlari:'İki ürünleri var',durum:'beklemede'},
-  {ad:'Sanomed',web:'sanomed.com.tr',telefon:'',referans_kisi:'',odak_kisi:'Mehmet Ayık / Ali Biçken',urun_notlari:'Birçok ürün',durum:'iletisimde'},
-  {ad:'Seltek',web:'seltekgroup.com',telefon:'0216 680 34 44',referans_kisi:'',odak_kisi:'Reha Zorlu (Dijital İşler)',urun_notlari:'Çoklu ürünler, kendi sipariş web var',durum:'iletisimde'},
-  {ad:'STR Medikal',web:'strmedical.com',telefon:'0532 600 98 34',referans_kisi:'',odak_kisi:'Meryem Abay',urun_notlari:'Çeşitli ürünler, Çorum merkezli ihracat',durum:'beklemede'},
-  {ad:'Trifarma',web:'trifarma.com.tr',telefon:'0212 876 33 98',referans_kisi:'',odak_kisi:'',urun_notlari:'Birçok ürün',durum:'iletisimde'},
-  {ad:'FacePharma',web:'facepharma.com.tr',telefon:'0232 234 24 94',referans_kisi:'',odak_kisi:'',urun_notlari:'Dolgu ve mezoterapi',durum:'baslanmadi'},
-  {ad:'Unimaster',web:'unimaster.com.tr',telefon:'0552 140 04 48',referans_kisi:'',odak_kisi:'Kübra Hanım',urun_notlari:'Dolgu ürünleri',durum:'olumlu'},
-  {ad:'Serkan Demir',web:'',telefon:'0537 864 71 20',referans_kisi:'',odak_kisi:'',urun_notlari:'Firma adı öğrenilemedi',durum:'beklemede'},
-  {ad:'Estetik Pharma',web:'estetikpharma.com',telefon:'',referans_kisi:'',odak_kisi:'Mutlu Begde (Sahibi)',urun_notlari:'',durum:'olumsuz'},
-  {ad:'deyPharma',web:'divesmedtr.com',telefon:'0506 649 63 63',referans_kisi:'',odak_kisi:'Tuğba Hanım',urun_notlari:'',durum:'iletisimde'},
-  {ad:'DS Pharma',web:'',telefon:'',referans_kisi:'',odak_kisi:'Çetin Bey (Şirket Sahibi)',urun_notlari:'Eski Metspharma mümessili',durum:'beklemede'},
-  {ad:'Helvacıoğlu Medikal',web:'medikaliste.com',telefon:'444 21 32',referans_kisi:'',odak_kisi:'Mert Bey (Satış Müd.)',urun_notlari:'',durum:'beklemede'},
-  {ad:'ASM Medikal Market',web:'asmmedikalmarket.com',telefon:'0532 317 97 60',referans_kisi:'',odak_kisi:'Gökhan Bey',urun_notlari:'Medikal sarf malzemeler',durum:'iletisimde'},
-  {ad:'Worldist Pharma',web:'worldistpharma.com.tr',telefon:'0532 770 00 80',referans_kisi:'',odak_kisi:'Murat Aksan (Owner)',urun_notlari:'',durum:'beklemede'},
-  {ad:'Demokozmetik',web:'',telefon:'0501 251 36 00',referans_kisi:'',odak_kisi:'Çiğdem Özad',urun_notlari:'8 SKU, medikal estetik doktorlara satış',durum:'olumlu'},
-  {ad:'Iconic Medical Cosmetics',web:'iconicmedicalcosmetics.com',telefon:'0212 287 00 90',referans_kisi:'',odak_kisi:'Sait Cevher Tatar (Yönetici)',urun_notlari:'',durum:'iletisimde'},
-  {ad:'Heimest',web:'heimest.com.tr',telefon:'0507 142 43 46',referans_kisi:'',odak_kisi:'',urun_notlari:'',durum:'baslanmadi'},
-  {ad:'Mayaform Medikal',web:'mayaformmedikal.com.tr',telefon:'0312 472 04 33',referans_kisi:'',odak_kisi:'Hakan Bey',urun_notlari:'',durum:'iletisimde'},
-  {ad:'Biyostem',web:'biyostem.com',telefon:'0532 260 27 05',referans_kisi:'',odak_kisi:'',urun_notlari:'',durum:'baslanmadi'},
-  {ad:'Metspharma',web:'',telefon:'',referans_kisi:'',odak_kisi:'',urun_notlari:'Ürün girişi yapılacak',durum:'baslanmadi'},
-  {ad:'Hybrexo',web:'',telefon:'',referans_kisi:'',odak_kisi:'',urun_notlari:'Ürün girişi yapılacak',durum:'baslanmadi'}
-];
-var SEED_TEMAS=[
-  {firma_ad:'Nortechpharma',tarih:'2026-02-16',kanal:'ziyaret',kisi:'Emel Özgen',ozet:'Ofiste 1 saat görüşüldü. Tahsilatın büyük sorun olduğu ve firmanın yer almak istediği söylendi.',sonuc:'olumlu',sonraki_adim:'Sözleşme gönder'},
-  {firma_ad:'Nortechpharma',tarih:'2026-02-23',kanal:'telefon',kisi:'Emel Özgen',ozet:'Komisyonu çok buldu. Aşılabilir olduğunu belirttim, sözleşmeyi inceleyecek.',sonuc:'beklemede',sonraki_adim:''},
-  {firma_ad:'Nortechpharma',tarih:'2026-03-06',kanal:'whatsapp',kisi:'Emel Özgen',ozet:'Hatırlatma mesajı gönderildi. Geri dönüş yok.',sonuc:'cevap_yok',sonraki_adim:''},
-  {firma_ad:'Unimaster',tarih:'2026-02-20',kanal:'telefon',kisi:'Kübra Hanım',ozet:"İlgilendiler. Komisyon oranı 11.25 söylendi. Trendyol'da da varlar.",sonuc:'olumlu',sonraki_adim:'Tekrar ara'},
-  {firma_ad:'Unimaster',tarih:'2026-03-03',kanal:'telefon',kisi:'Kübra Hanım',ozet:"Hespidolgu ile çalışıyorlar. Komisyon 9.75'e indirildi.",sonuc:'olumlu',sonraki_adim:''},
-  {firma_ad:'Unimaster',tarih:'2026-03-09',kanal:'eposta',kisi:'Kübra Hanım',ozet:'Giriş bilgileri istendi, gönderildi. Sisteme giriyorlar.',sonuc:'olumlu',sonraki_adim:''},
-  {firma_ad:'DFL',tarih:'2026-02-20',kanal:'eposta',kisi:'Emre Bey (Muhasebe)',ozet:'İlk bilgi epostası gönderildi. Genel Müdür Sertaç Bahar hedef.',sonuc:'cevap_yok',sonraki_adim:'Tekrar ara'},
-  {firma_ad:'DFL',tarih:'2026-03-04',kanal:'telefon',kisi:'-',ozet:"Santral'da cevap verecek kimse yok uyarısı alındı.",sonuc:'cevap_yok',sonraki_adim:''},
-  {firma_ad:'Genotek',tarih:'2026-03-05',kanal:'telefon',kisi:'Hakan Şahin',ozet:'Çok ilgilendi, eposta talep etti. Şirket sahibiyle görüşecek.',sonuc:'olumlu',sonraki_adim:'Geri dönüş bekle'},
-  {firma_ad:'Revoderm',tarih:'2026-03-06',kanal:'telefon',kisi:'Gökhan Yavuz',ozet:'Geri döndü. Eticaret sitesi kuracağını söyledi.',sonuc:'beklemede',sonraki_adim:"11.04.2026'da ara"},
-  {firma_ad:'Rebe Medikal',tarih:'2026-03-11',kanal:'whatsapp',kisi:'Mustafa Bey',ozet:'Verimli görüşme. Dijital broşür ve video gönderildi.',sonuc:'olumlu',sonraki_adim:''},
-  {firma_ad:'STR Medikal',tarih:'2026-03-11',kanal:'telefon',kisi:'-',ozet:'Ulaşılamadı, telefon cevap vermedi.',sonuc:'cevap_yok',sonraki_adim:'Ertesi gün tekrar ara'},
-  {firma_ad:'STR Medikal',tarih:'2026-03-12',kanal:'telefon',kisi:'Meryem Abay',ozet:"MestMall ilgilerini çekti. 3 ay sonra süreç bitince görüşülecek.",sonuc:'beklemede',sonraki_adim:'3 ay sonra ara'}
-];
-function init(){
-  SEED.forEach(function(s){var id=DB.newFirmaId();DB.firmalar.push(Object.assign({id:id,olusturma:new Date().toISOString(),son_temas:null},s));});
-  SEED_TEMAS.forEach(function(t){var firma=DB.firmalar.find(function(f){return f.ad===t.firma_ad;});if(!firma)return;var id=DB.newTemasId();DB.temas.push({id:id,firma_id:firma.id,tarih:t.tarih,kanal:t.kanal,kisi:t.kisi,ozet:t.ozet,sonuc:t.sonuc,sonraki_adim:t.sonraki_adim});if(!firma.son_temas||t.tarih>firma.son_temas)firma.son_temas=t.tarih;});
-  renderStats();renderGrid();
+var DB={firmalar:[],temas:[],editFirmaId:null,editTemasId:null,activeFirmaId:null,activeFilter:'tumu',_fid:1000,_tid:2000};
+
+async function api(method,path,body){
+  var opts={method:method,headers:getAuthHeader()};
+  if(body)opts.body=JSON.stringify(body);
+  var res=await fetch('/api/'+path,opts);
+  if(!res.ok)throw new Error(await res.text());
+  return res.json();
 }
+
+async function init(){
+  if(!SESSION.token){document.getElementById('login-overlay').classList.add('show');return;}
+  try{
+    var firmalar=await api('GET','firmalar');
+    DB.firmalar=firmalar;
+    renderStats();renderGrid();updatePlanBadge();
+    registerPush();
+  }catch(e){
+    document.getElementById('firma-grid').innerHTML='<div class="no-results">Veri yüklenemedi: '+e.message+'</div>';
+  }
+}
+
+async function loadFirmaDetail(id){
+  var data=await api('GET','firma/'+id);
+  var firma=data;
+  DB.temas=data.temas||[];
+  var idx=DB.firmalar.findIndex(function(f){return f.id===id;});
+  if(idx>=0)DB.firmalar[idx]=firma;
+  return firma;
+}
+
 function badge(durum){var labels={olumlu:'Olumlu',beklemede:'Beklemede',olumsuz:'Ulaşılamadı',iletisimde:'İletişimde',baslanmadi:'Başlanmadı'};return '<span class="badge b-'+durum+'">'+(labels[durum]||durum)+'</span>';}
-function renderStats(){var counts={olumlu:0,beklemede:0,iletisimde:0,olumsuz:0,baslanmadi:0};DB.firmalar.forEach(function(f){counts[f.durum]++;});document.getElementById('stats-row').innerHTML='<div class="stat"><div class="stat-label">Toplam</div><div class="stat-val">'+DB.firmalar.length+'</div></div><div class="stat"><div class="stat-label">Olumlu</div><div class="stat-val" style="color:#085041">'+counts.olumlu+'</div></div><div class="stat"><div class="stat-label">Beklemede</div><div class="stat-val" style="color:#633806">'+counts.beklemede+'</div></div><div class="stat"><div class="stat-label">İletişimde</div><div class="stat-val" style="color:#0c447c">'+counts.iletisimde+'</div></div><div class="stat"><div class="stat-label">Ulaşılamadı</div><div class="stat-val" style="color:#791f1f">'+counts.olumsuz+'</div></div>';}
+
+function renderStats(){
+  if(SESSION.user){var el=document.getElementById('user-ad');if(el)el.textContent=SESSION.user.ad;}var counts={olumlu:0,beklemede:0,iletisimde:0,olumsuz:0,baslanmadi:0};DB.firmalar.forEach(function(f){counts[f.durum]++;});document.getElementById('stats-row').innerHTML='<div class="stat"><div class="stat-label">Toplam</div><div class="stat-val">'+DB.firmalar.length+'</div></div><div class="stat"><div class="stat-label">Olumlu</div><div class="stat-val" style="color:#085041">'+counts.olumlu+'</div></div><div class="stat"><div class="stat-label">Beklemede</div><div class="stat-val" style="color:#633806">'+counts.beklemede+'</div></div><div class="stat"><div class="stat-label">İletişimde</div><div class="stat-val" style="color:#0c447c">'+counts.iletisimde+'</div></div><div class="stat"><div class="stat-label">Ulaşılamadı</div><div class="stat-val" style="color:#791f1f">'+counts.olumsuz+'</div></div>';}
+
 function setFilter(btn){document.querySelectorAll('.filt').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');DB.activeFilter=btn.dataset.d;renderGrid();}
-function renderGrid(){var q=document.getElementById('search').value.toLowerCase();var list=DB.firmalar.filter(function(f){var matchF=DB.activeFilter==='tumu'||f.durum===DB.activeFilter;var matchQ=!q||f.ad.toLowerCase().includes(q)||(f.odak_kisi||'').toLowerCase().includes(q);return matchF&&matchQ;}).sort(function(a,b){return a.ad.localeCompare(b.ad);});var grid=document.getElementById('firma-grid');grid.innerHTML='';if(!list.length){grid.innerHTML='<div class="no-results">Sonuç bulunamadı.</div>';return;}list.forEach(function(f){var div=document.createElement('div');div.className='card';div.onclick=function(){showDetail(f.id);};var header=document.createElement('div');header.className='card-header';var adSpan=document.createElement('span');adSpan.className='card-firma-adi';adSpan.textContent=f.ad;var badgeEl=document.createElement('span');badgeEl.innerHTML=badge(f.durum);header.appendChild(adSpan);header.appendChild(badgeEl);div.appendChild(header);if(f.odak_kisi){var m=document.createElement('div');m.className='card-meta';m.textContent=f.odak_kisi;div.appendChild(m);}if(f.telefon){var t=document.createElement('div');t.className='card-meta';t.textContent=f.telefon;div.appendChild(t);}if(f.son_temas){var s=document.createElement('div');s.className='card-meta';s.style.marginTop='4px';s.textContent='Son temas: '+f.son_temas;div.appendChild(s);}if(f.urun_notlari){var n=document.createElement('div');n.className='card-not';n.textContent=f.urun_notlari;div.appendChild(n);}grid.appendChild(div);});}
-function showDetail(id){var f=DB.firmalar.find(function(x){return x.id===id;});if(!f)return;DB.activeFirmaId=id;document.getElementById('det-title').textContent=f.ad;document.getElementById('det-badge').innerHTML=badge(f.durum);document.getElementById('det-actions').innerHTML='<button class="btn btn-sm" onclick="openFirmaModal('+id+')">Düzenle</button><button class="btn btn-sm btn-red" onclick="confirmDeleteFirma('+id+')">Sil</button>';renderDetailBody(f);showPage('detail');}
-function renderDetailBody(f){var rows=[['Web sitesi',f.web?'<a href="'+(f.web.startsWith('http')?f.web:'https://'+f.web)+'" target="_blank">'+esc(f.web)+'</a>':''],['Telefon',esc(f.telefon||'')],['Referans kişi',esc(f.referans_kisi||'')],['Odak kişi',esc(f.odak_kisi||'')],['Ürün / notlar',esc(f.urun_notlari||'')]].filter(function(r){return r[1];}).map(function(r){return '<div class="irow"><span class="ilabel">'+r[0]+'</span><span class="ival">'+r[1]+'</span></div>';}).join('');var temasList=DB.temas.filter(function(t){return t.firma_id===f.id;}).sort(function(a,b){return b.tarih.localeCompare(a.tarih);});var temasHtml=temasList.length?temasList.map(function(t){var icons={telefon:'📞',eposta:'✉',whatsapp:'💬',ziyaret:'🤝'};var cls={telefon:'ti-telefon',eposta:'ti-eposta',whatsapp:'ti-whatsapp',ziyaret:'ti-ziyaret'};var sonucLabels={olumlu:'Olumlu',beklemede:'Beklemede',cevap_yok:'Cevap yok',olumsuz:'Olumsuz'};var sonucColors={olumlu:'#085041',beklemede:'#633806',cevap_yok:'#444441',olumsuz:'#791f1f'};return '<div class="temas-item"><div class="temas-icon '+(cls[t.kanal]||'ti-telefon')+'" style="font-size:13px">'+(icons[t.kanal]||'📞')+'</div><div class="temas-content"><div class="temas-meta"><span class="temas-tarih">'+t.tarih+'</span><span class="temas-kanal-badge">'+t.kanal+'</span>'+(t.kisi?'<span class="temas-kisi">'+esc(t.kisi)+'</span>':'')+'</div><div class="temas-ozet">'+esc(t.ozet)+'</div>'+(t.sonuc?'<div style="font-size:11px;color:'+(sonucColors[t.sonuc]||'#444')+'">Sonuç: '+(sonucLabels[t.sonuc]||t.sonuc)+'</div>':'')+(t.sonraki_adim?'<div class="temas-sonraki">→ '+esc(t.sonraki_adim)+'</div>':'')+'<div class="temas-acts"><button class="tact" onclick="openTemasModal('+t.id+')">Düzenle</button><button class="tact red" onclick="deleteTemas('+t.id+')">Sil</button></div></div></div>';}).join(''):'<div class="empty-state">Henüz temas kaydı yok.<br><button class="btn btn-sm btn-green" style="margin-top:12px" onclick="openTemasModal(null)">İlk temas kaydını ekle</button></div>';document.getElementById('detail-body').innerHTML='<div class="dcard"><div class="dcard-head"><span class="dcard-title">Firma bilgileri</span></div>'+rows+'</div><div class="dcard"><div class="dcard-head"><span class="dcard-title">Temas geçmişi ('+temasList.length+')</span><button class="btn btn-sm btn-green" onclick="openTemasModal(null)">+ Temas ekle</button></div><div class="temas-list">'+temasHtml+'</div></div>';}
-function confirmDeleteFirma(id){if(!confirm('Bu firmayı silmek istediğinize emin misiniz?'))return;DB.firmalar=DB.firmalar.filter(function(f){return f.id!==id;});DB.temas=DB.temas.filter(function(t){return t.firma_id!==id;});renderStats();renderGrid();showPage('list');}
-function deleteTemas(id){if(!confirm('Bu temas kaydını silmek istiyor musunuz?'))return;DB.temas=DB.temas.filter(function(t){return t.id!==id;});updateSonTemas(DB.activeFirmaId);var f=DB.firmalar.find(function(x){return x.id===DB.activeFirmaId;});if(f)renderDetailBody(f);}
-function updateSonTemas(firmaId){var firma=DB.firmalar.find(function(f){return f.id===firmaId;});if(!firma)return;var ts=DB.temas.filter(function(t){return t.firma_id===firmaId;});firma.son_temas=ts.length?ts.sort(function(a,b){return b.tarih.localeCompare(a.tarih);})[0].tarih:null;}
-function openFirmaModal(id){DB.editFirmaId=id;var err=document.getElementById('firma-err');err.style.display='none';err.textContent='';if(id){var f=DB.firmalar.find(function(x){return x.id===id;});document.getElementById('fmodal-title').textContent='Firma düzenle';document.getElementById('f-ad').value=f.ad;document.getElementById('f-web').value=f.web||'';document.getElementById('f-tel').value=f.telefon||'';document.getElementById('f-ref').value=f.referans_kisi||'';document.getElementById('f-odak').value=f.odak_kisi||'';document.getElementById('f-not').value=f.urun_notlari||'';document.getElementById('f-durum').value=f.durum||'baslanmadi';}else{document.getElementById('fmodal-title').textContent='Yeni firma ekle';['f-ad','f-web','f-tel','f-ref','f-odak','f-not'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('f-durum').value='baslanmadi';}document.getElementById('firma-modal').classList.add('open');}
-function saveFirma(){var ad=document.getElementById('f-ad').value.trim();if(!ad){var err=document.getElementById('firma-err');err.textContent='Firma adı zorunludur.';err.style.display='block';return;}var data={ad:ad,web:document.getElementById('f-web').value.trim(),telefon:document.getElementById('f-tel').value.trim(),referans_kisi:document.getElementById('f-ref').value.trim(),odak_kisi:document.getElementById('f-odak').value.trim(),urun_notlari:document.getElementById('f-not').value.trim(),durum:document.getElementById('f-durum').value};if(DB.editFirmaId){var f=DB.firmalar.find(function(x){return x.id===DB.editFirmaId;});Object.assign(f,data);document.getElementById('det-title').textContent=f.ad;document.getElementById('det-badge').innerHTML=badge(f.durum);renderDetailBody(f);}else{var id=DB.newFirmaId();DB.firmalar.push(Object.assign({id:id,olusturma:new Date().toISOString(),son_temas:null},data));}renderStats();renderGrid();closeModal('firma-modal');}
-function openTemasModal(id){DB.editTemasId=id;var err=document.getElementById('temas-err');err.style.display='none';err.textContent='';if(id){var t=DB.temas.find(function(x){return x.id===id;});document.getElementById('tmodal-title').textContent='Temas kaydını düzenle';document.getElementById('t-tarih').value=t.tarih;document.getElementById('t-kanal').value=t.kanal;document.getElementById('t-kisi').value=t.kisi||'';document.getElementById('t-ozet').value=t.ozet;document.getElementById('t-sonuc').value=t.sonuc||'beklemede';document.getElementById('t-adim').value=t.sonraki_adim||'';}else{document.getElementById('tmodal-title').textContent='Yeni temas kaydı';document.getElementById('t-tarih').value=new Date().toISOString().split('T')[0];document.getElementById('t-kanal').value='telefon';['t-kisi','t-ozet','t-adim'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('t-sonuc').value='beklemede';}document.getElementById('temas-modal').classList.add('open');}
-function saveTemas(){var ozet=document.getElementById('t-ozet').value.trim();if(!ozet){var err=document.getElementById('temas-err');err.textContent='Görüşme özeti zorunludur.';err.style.display='block';return;}var data={firma_id:DB.activeFirmaId,tarih:document.getElementById('t-tarih').value,kanal:document.getElementById('t-kanal').value,kisi:document.getElementById('t-kisi').value.trim(),ozet:ozet,sonuc:document.getElementById('t-sonuc').value,sonraki_adim:document.getElementById('t-adim').value.trim()};if(DB.editTemasId){var t=DB.temas.find(function(x){return x.id===DB.editTemasId;});Object.assign(t,data);}else{data.id=DB.newTemasId();DB.temas.push(data);}updateSonTemas(DB.activeFirmaId);var f=DB.firmalar.find(function(x){return x.id===DB.activeFirmaId;});if(f)renderDetailBody(f);renderGrid();closeModal('temas-modal');}
+
+function planSign(f){
+  if(!f.plan||!f.plan.tarih)return null;
+  var today=new Date();today.setHours(0,0,0,0);
+  var planDate=new Date(f.plan.tarih);planDate.setHours(0,0,0,0);
+  var diff=Math.round((planDate-today)/(1000*60*60*24));
+  if(diff<0)return {color:'#a32d2d',bg:'#fcebeb',label:'📅 '+f.plan.tarih+' (gecikti)'};
+  if(diff<=1)return {color:'#854f0b',bg:'#faeeda',label:'📅 '+f.plan.tarih+(diff===0?' (bugün)':' (yarın)')};
+  return null;
+}
+
+function updatePlanBadge(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var count=DB.firmalar.filter(function(f){
+    if(!f.plan||!f.plan.tarih)return false;
+    var d=new Date(f.plan.tarih);d.setHours(0,0,0,0);
+    return d<=today;
+  }).length;
+  var badge=document.getElementById('plan-badge');
+  if(!badge)return;
+  if(count>0){badge.textContent=count;badge.style.display='inline-flex';}
+  else{badge.style.display='none';}
+}
+
+function renderGrid(){
+  var q=document.getElementById('search').value.toLowerCase();
+  var list=DB.firmalar.filter(function(f){
+    var matchF=DB.activeFilter==='tumu'||f.durum===DB.activeFilter||(DB.activeFilter==='planli'&&f.plan&&f.plan.tarih);
+    var matchQ=!q||f.ad.toLowerCase().includes(q)||(f.odak_kisi||'').toLowerCase().includes(q);
+    return matchF&&matchQ;
+  }).sort(function(a,b){return a.ad.localeCompare(b.ad);});
+  var grid=document.getElementById('firma-grid');grid.innerHTML='';
+  if(!list.length){grid.innerHTML='<div class="no-results">Sonuç bulunamadı.</div>';return;}
+  list.forEach(function(f){
+    var div=document.createElement('div');div.className='card';div.onclick=function(){showDetail(f.id);};
+    var header=document.createElement('div');header.className='card-header';
+    var adSpan=document.createElement('span');adSpan.className='card-firma-adi';adSpan.textContent=f.ad;
+    var badgeEl=document.createElement('span');badgeEl.innerHTML=badge(f.durum);
+    header.appendChild(adSpan);header.appendChild(badgeEl);div.appendChild(header);
+    if(f.odak_kisi){var m=document.createElement('div');m.className='card-meta';m.textContent=f.odak_kisi;div.appendChild(m);}
+    if(f.telefon){var t=document.createElement('div');t.className='card-meta';t.textContent=f.telefon;div.appendChild(t);}
+    if(f.son_temas){var s=document.createElement('div');s.className='card-meta';s.style.marginTop='4px';s.textContent='Son temas: '+f.son_temas;div.appendChild(s);}
+    if(f.urun_notlari){var n=document.createElement('div');n.className='card-not';n.textContent=f.urun_notlari;div.appendChild(n);}
+    var sign=planSign(f);
+    if(sign){var p=document.createElement('div');p.style.cssText='margin-top:8px;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;background:'+sign.bg+';color:'+sign.color;p.textContent=sign.label;div.appendChild(p);}
+    grid.appendChild(div);
+  });
+}
+
+async function showDetail(id){
+  showPage('detail');
+  document.getElementById('det-title').textContent='Yükleniyor...';
+  document.getElementById('det-badge').innerHTML='';
+  document.getElementById('detail-body').innerHTML='<div class="empty-state">Yükleniyor...</div>';
+  var f=await loadFirmaDetail(id);
+  DB.activeFirmaId=id;
+  document.getElementById('det-title').textContent=f.ad;
+  document.getElementById('det-badge').innerHTML=badge(f.durum);
+  document.getElementById('det-actions').innerHTML='<button class="btn btn-sm" onclick="openFirmaModal('+JSON.stringify(id)+')">Düzenle</button><button class="btn btn-sm btn-red" onclick="confirmDeleteFirma('+JSON.stringify(id)+')">Sil</button>';
+  renderDetailBody(f);
+}
+
+function renderDetailBody(f){
+  var rows=[['Web sitesi',f.web?'<a href="'+(f.web.startsWith('http')?f.web:'https://'+f.web)+'" target="_blank">'+esc(f.web)+'</a>':''],['Telefon',esc(f.telefon||'')],['E-posta',f.eposta?'<a href="mailto:'+esc(f.eposta)+'">'+esc(f.eposta)+'</a>':''],['Referans kişi',esc(f.referans_kisi||'')],['Odak kişi',esc(f.odak_kisi||'')],['Ürün / notlar',esc(f.urun_notlari||'')]].filter(function(r){return r[1];}).map(function(r){return '<div class="irow"><span class="ilabel">'+r[0]+'</span><span class="ival">'+r[1]+'</span></div>';}).join('');
+  var temasList=DB.temas;
+  var temasHtml=temasList.length?temasList.map(function(t){
+    var icons={telefon:'📞',eposta:'✉',whatsapp:'💬',ziyaret:'🤝'};
+    var cls={telefon:'ti-telefon',eposta:'ti-eposta',whatsapp:'ti-whatsapp',ziyaret:'ti-ziyaret'};
+    var sonucLabels={olumlu:'Olumlu',beklemede:'Beklemede',cevap_yok:'Cevap yok',olumsuz:'Olumsuz'};
+    var sonucColors={olumlu:'#085041',beklemede:'#633806',cevap_yok:'#444441',olumsuz:'#791f1f'};
+    var kanalArr=Array.isArray(t.kanal)?t.kanal:[t.kanal];
+    var ilkKanal=kanalArr[0]||'telefon';
+    var kanalBadgeler=kanalArr.map(function(k){return '<span class="temas-kanal-badge">'+k+'</span>';}).join(' ');
+    return '<div class="temas-item"><div class="temas-icon '+(cls[ilkKanal]||'ti-telefon')+'" style="font-size:13px">'+(icons[ilkKanal]||'📞')+'</div><div class="temas-content"><div class="temas-meta"><span class="temas-tarih">'+t.tarih+'</span>'+kanalBadgeler+(t.kisi?'<span class="temas-kisi">'+esc(t.kisi)+'</span>':'')+'</div>'+(t.kisi_tel||t.kisi_eposta?'<div style="font-size:11px;color:#6b7280;margin-bottom:3px">'+(t.kisi_tel?'📞 '+esc(t.kisi_tel)+'&nbsp;&nbsp;':'')+(t.kisi_eposta?'✉ <a href="mailto:'+esc(t.kisi_eposta)+'" style="color:#1d9e75">'+esc(t.kisi_eposta)+'</a>':'')+'</div>':'')+(t.yapan_kisi?'<div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Görüşen: '+esc(t.yapan_kisi)+(t.yapan_tel?' · '+esc(t.yapan_tel):'')+(t.yapan_eposta?' · <a href="mailto:'+esc(t.yapan_eposta)+'" style="color:#6b7280">'+esc(t.yapan_eposta)+'</a>':'')+'</div>':'')+'<div class="temas-ozet">'+esc(t.ozet)+'</div>'+(t.sonuc?'<div style="font-size:11px;color:'+(sonucColors[t.sonuc]||'#444')+'">Sonuç: '+(sonucLabels[t.sonuc]||t.sonuc)+'</div>':'')+'<div class="temas-acts"><button class="tact" onclick="openTemasModal('+JSON.stringify(t.id)+')">Düzenle</button><button class="tact red" onclick="deleteTemas('+JSON.stringify(t.id)+')">Sil</button></div></div></div>';
+  }).join(''):'<div class="empty-state">Henüz temas kaydı yok.<br><button class="btn btn-sm btn-green" style="margin-top:12px" onclick="openTemasModal(null)">İlk temas kaydını ekle</button></div>';
+  var plan=f.plan;
+  var sign=planSign(f);
+  var planHtml=plan&&plan.tarih?
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px"><div>'+
+    (plan.kisi?'<div class="irow" style="padding:6px 0"><span class="ilabel">Kiminle</span><span class="ival">'+esc(plan.kisi)+'</span></div>':'')+
+    '<div class="irow" style="padding:6px 0"><span class="ilabel">Randevu</span><span class="ival" style="font-weight:600;color:'+(sign?sign.color:'#111')+'">'+plan.tarih+(sign&&sign.label.includes('gecikti')?' ⚠️ Gecikti':sign&&sign.label.includes('bugün')?' — Bugün!':sign&&sign.label.includes('yarın')?' — Yarın!':'')+'</span></div>'+
+    (plan.kanal&&plan.kanal.length?'<div class="irow" style="padding:6px 0"><span class="ilabel">Kanal</span><span class="ival">'+plan.kanal.join(', ')+'</span></div>':'')+
+    '</div><button class="btn btn-sm" onclick="openPlanModal()">Güncelle</button></div>'
+    :'<div class="empty-state" style="padding:20px"><p style="margin-bottom:12px">Henüz plan yok.</p><button class="btn btn-sm btn-green" onclick="openPlanModal()">+ Plan ekle</button></div>';
+  document.getElementById('detail-body').innerHTML=
+    '<div class="dcard"><div class="dcard-head"><span class="dcard-title">Firma bilgileri</span></div>'+rows+'</div>'+
+    '<div class="dcard"><div class="dcard-head"><span class="dcard-title">Temas geçmişi ('+temasList.length+')</span><button class="btn btn-sm btn-green" onclick="openTemasModal(null)">+ Temas ekle</button></div><div class="temas-list">'+temasHtml+'</div></div>'+
+    '<div class="dcard"><div class="dcard-head"><span class="dcard-title">Sonraki iletişim planı</span></div><div style="padding:12px 16px">'+planHtml+'</div></div>';
+}
+
+async function confirmDeleteFirma(id){
+  if(!confirm('Bu firmayı silmek istediğinize emin misiniz?'))return;
+  await api('DELETE','firma/'+id);
+  DB.firmalar=DB.firmalar.filter(function(f){return f.id!==id;});
+  renderStats();renderGrid();showPage('list');
+}
+
+async function deleteTemas(id){
+  if(!confirm('Bu temas kaydını silmek istiyor musunuz?'))return;
+  await api('DELETE','temas/'+id);
+  DB.temas=DB.temas.filter(function(t){return t.id!==id;});
+  var f=DB.firmalar.find(function(x){return x.id===DB.activeFirmaId;});
+  if(f)renderDetailBody(f);
+}
+
+function openFirmaModal(id){
+  DB.editFirmaId=id;
+  var err=document.getElementById('firma-err');err.style.display='none';err.textContent='';
+  if(id){
+    var f=DB.firmalar.find(function(x){return x.id===id;});
+    document.getElementById('fmodal-title').textContent='Firma düzenle';
+    document.getElementById('f-ad').value=f.ad;
+    document.getElementById('f-web').value=f.web||'';
+    document.getElementById('f-tel').value=f.telefon||'';
+    document.getElementById('f-eposta').value=f.eposta||'';
+    document.getElementById('f-ref').value=f.referans_kisi||'';
+    document.getElementById('f-odak').value=f.odak_kisi||'';
+    document.getElementById('f-not').value=f.urun_notlari||'';
+    document.getElementById('f-durum').value=f.durum||'baslanmadi';
+  }else{
+    document.getElementById('fmodal-title').textContent='Yeni firma ekle';
+    ['f-ad','f-web','f-tel','f-eposta','f-ref','f-odak','f-not'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('f-durum').value='baslanmadi';
+  }
+  document.getElementById('firma-modal').classList.add('open');
+}
+
+async function saveFirma(){
+  var ad=document.getElementById('f-ad').value.trim();
+  if(!ad){var err=document.getElementById('firma-err');err.textContent='Firma adı zorunludur.';err.style.display='block';return;}
+  var data={ad:ad,web:document.getElementById('f-web').value.trim(),telefon:document.getElementById('f-tel').value.trim(),eposta:document.getElementById('f-eposta').value.trim(),referans_kisi:document.getElementById('f-ref').value.trim(),odak_kisi:document.getElementById('f-odak').value.trim(),urun_notlari:document.getElementById('f-not').value.trim(),durum:document.getElementById('f-durum').value};
+  if(DB.editFirmaId){
+    var updated=await api('PUT','firma/'+DB.editFirmaId,data);
+    var idx=DB.firmalar.findIndex(function(f){return f.id===DB.editFirmaId;});
+    if(idx>=0)DB.firmalar[idx]=updated;
+    document.getElementById('det-title').textContent=updated.ad;
+    document.getElementById('det-badge').innerHTML=badge(updated.durum);
+    renderDetailBody(updated);
+  }else{
+    var created=await api('POST','firmalar',data);
+    DB.firmalar.push(created);
+  }
+  renderStats();renderGrid();closeModal('firma-modal');
+}
+
+function openTemasModal(id){
+  DB.editTemasId=id;
+  var err=document.getElementById('temas-err');err.style.display='none';err.textContent='';
+  var kanallar=['telefon','eposta','whatsapp','ziyaret'];
+  kanallar.forEach(function(k){document.getElementById('t-kanal-'+k).checked=false;});
+  var saved=JSON.parse(localStorage.getItem('mestmall_yapan')||'{}');
+  if(id){
+    var t=DB.temas.find(function(x){return x.id===id;});
+    document.getElementById('tmodal-title').textContent='Temas kaydını düzenle';
+    document.getElementById('t-tarih').value=t.tarih;
+    var aktifKanallar=Array.isArray(t.kanal)?t.kanal:[t.kanal];
+    aktifKanallar.forEach(function(k){var el=document.getElementById('t-kanal-'+k);if(el)el.checked=true;});
+    document.getElementById('t-kisi').value=t.kisi||'';
+    document.getElementById('t-kisi-tel').value=t.kisi_tel||'';
+    document.getElementById('t-kisi-eposta').value=t.kisi_eposta||'';
+    document.getElementById('t-yapan-kisi').value=t.yapan_kisi||saved.kisi||'';
+    document.getElementById('t-yapan-tel').value=t.yapan_tel||saved.tel||'';
+    document.getElementById('t-yapan-eposta').value=t.yapan_eposta||saved.eposta||'';
+    document.getElementById('t-ozet').value=t.ozet;
+    document.getElementById('t-sonuc').value=t.sonuc||'beklemede';
+  }else{
+    document.getElementById('tmodal-title').textContent='Yeni temas kaydı';
+    document.getElementById('t-tarih').value=new Date().toISOString().split('T')[0];
+    ['t-kisi','t-kisi-tel','t-kisi-eposta','t-ozet'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('t-yapan-kisi').value=saved.kisi||'';
+    document.getElementById('t-yapan-tel').value=saved.tel||'';
+    document.getElementById('t-yapan-eposta').value=saved.eposta||'';
+    document.getElementById('t-sonuc').value='beklemede';
+  }
+  document.getElementById('temas-modal').classList.add('open');
+}
+
+async function saveTemas(){
+  var ozet=document.getElementById('t-ozet').value.trim();
+  if(!ozet){var err=document.getElementById('temas-err');err.textContent='Görüşme özeti zorunludur.';err.style.display='block';return;}
+  var kanallar=['telefon','eposta','whatsapp','ziyaret'].filter(function(k){return document.getElementById('t-kanal-'+k).checked;});
+  if(!kanallar.length){var err=document.getElementById('temas-err');err.textContent='En az bir kanal seçiniz.';err.style.display='block';return;}
+  var yapanKisi=document.getElementById('t-yapan-kisi').value.trim();
+  var yapanTel=document.getElementById('t-yapan-tel').value.trim();
+  var yapanEposta=document.getElementById('t-yapan-eposta').value.trim();
+  if(yapanKisi)localStorage.setItem('mestmall_yapan',JSON.stringify({kisi:yapanKisi,tel:yapanTel,eposta:yapanEposta}));
+  var data={firma_id:DB.activeFirmaId,tarih:document.getElementById('t-tarih').value,kanal:kanallar,kisi:document.getElementById('t-kisi').value.trim(),kisi_tel:document.getElementById('t-kisi-tel').value.trim(),kisi_eposta:document.getElementById('t-kisi-eposta').value.trim(),yapan_kisi:yapanKisi,yapan_tel:yapanTel,yapan_eposta:yapanEposta,ozet:ozet,sonuc:document.getElementById('t-sonuc').value};
+  if(DB.editTemasId){
+    var updated=await api('PUT','temas/'+DB.editTemasId,data);
+    var idx=DB.temas.findIndex(function(t){return t.id===DB.editTemasId;});
+    if(idx>=0)DB.temas[idx]=updated;
+  }else{
+    var created=await api('POST','temas',data);
+    DB.temas.unshift(created);
+    var firma=DB.firmalar.find(function(f){return f.id===DB.activeFirmaId;});
+    if(firma&&(!firma.son_temas||data.tarih>firma.son_temas))firma.son_temas=data.tarih;
+  }
+  var f=DB.firmalar.find(function(x){return x.id===DB.activeFirmaId;});
+  if(f)renderDetailBody(f);
+  renderGrid();
+  closeModal('temas-modal');
+}
+
+function openPlanModal(){
+  var f=DB.firmalar.find(function(x){return x.id===DB.activeFirmaId;});
+  var plan=f&&f.plan?f.plan:{};
+  document.getElementById('plan-err').style.display='none';
+  document.getElementById('p-kisi').value=plan.kisi||'';
+  document.getElementById('p-tarih').value=plan.tarih||new Date().toISOString().split('T')[0];
+  ['telefon','eposta','whatsapp','ziyaret'].forEach(function(k){
+    document.getElementById('p-kanal-'+k).checked=plan.kanal&&plan.kanal.includes(k);
+  });
+  document.getElementById('plan-modal').classList.add('open');
+}
+
+async function savePlan(){
+  var tarih=document.getElementById('p-tarih').value;
+  if(!tarih){var err=document.getElementById('plan-err');err.textContent='Randevu tarihi zorunludur.';err.style.display='block';return;}
+  var kanallar=['telefon','eposta','whatsapp','ziyaret'].filter(function(k){return document.getElementById('p-kanal-'+k).checked;});
+  var planData={kisi:document.getElementById('p-kisi').value.trim(),tarih:tarih,kanal:kanallar};
+  var updated=await api('PUT','plan?firmaId='+DB.activeFirmaId,planData);
+  var idx=DB.firmalar.findIndex(function(f){return f.id===DB.activeFirmaId;});
+  if(idx>=0)DB.firmalar[idx]=updated;
+  renderDetailBody(updated);
+  renderGrid();
+  updatePlanBadge();
+  closeModal('plan-modal');
+}
+
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-function showPage(name){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('page-'+name).classList.add('active');if(name==='list'){renderStats();renderGrid();}}
+
+function showPage(name){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  if(name==='list'){renderStats();renderGrid();}
+}
+
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function registerPush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  try{
+    var reg=await navigator.serviceWorker.register('/sw.js');
+    var permission=await Notification.requestPermission();
+    if(permission!=='granted')return;
+    var sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(
+var SESSION = {
+  token: localStorage.getItem('crm_token'),
+  user: JSON.parse(localStorage.getItem('crm_user') || 'null')
+};
+
+function getAuthHeader() {
+  return SESSION.token ? { 'Authorization': 'Bearer ' + SESSION.token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+}
+
+async function girisYap() {
+  var tel = document.getElementById('login-tel').value.trim();
+  var sifre = document.getElementById('login-sifre').value;
+  var err = document.getElementById('login-err');
+  var btn = document.getElementById('login-btn');
+  if (!tel || !sifre) { err.textContent = 'Tüm alanları doldurun.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
+  try {
+    var res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cep_tel: tel, sifre: sifre }) });
+    var data = await res.json();
+    if (!res.ok) { err.textContent = data.error || 'Hata oluştu.'; err.style.display = 'block'; return; }
+    SESSION.token = data.token;
+    SESSION.user = data.user;
+    localStorage.setItem('crm_token', data.token);
+    localStorage.setItem('crm_user', JSON.stringify(data.user));
+    if (data.ilkGiris) {
+      document.getElementById('login-overlay').classList.remove('show');
+      document.getElementById('sifre-overlay').classList.add('show');
+    } else {
+      document.getElementById('login-overlay').classList.remove('show');
+      init();
+    }
+  } catch(e) {
+    err.textContent = 'Bağlantı hatası.'; err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Giriş Yap';
+  }
+}
+
+async function sifreDegistir() {
+  var yeni = document.getElementById('yeni-sifre').value;
+  var yeni2 = document.getElementById('yeni-sifre2').value;
+  var err = document.getElementById('sifre-err');
+  if (yeni.length < 6) { err.textContent = 'Şifre en az 6 karakter olmalı.'; err.style.display = 'block'; return; }
+  if (yeni !== yeni2) { err.textContent = 'Şifreler eşleşmiyor.'; err.style.display = 'block'; return; }
+  var res = await fetch('/api/user/' + SESSION.user.id, { method: 'PUT', headers: getAuthHeader(), body: JSON.stringify({ action: 'sifre_degistir', yeni_sifre: yeni }) });
+  if (res.ok) {
+    document.getElementById('sifre-overlay').classList.remove('show');
+    init();
+  }
+}
+
+function cikisYap() {
+  localStorage.removeItem('crm_token');
+  localStorage.removeItem('crm_user');
+  SESSION.token = null; SESSION.user = null;
+  location.reload();
+}
+
+window.VAPID_PUBLIC_KEY||'')});
+    await api('POST','push',{subscription:sub.toJSON()});
+  }catch(e){console.log('Push registration failed:',e);}
+}
+
+function urlBase64ToUint8Array(base64String){
+  var padding='='.repeat((4-base64String.length%4)%4);
+  var base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  var rawData=window.atob(base64);
+  var outputArray=new Uint8Array(rawData.length);
+  for(var i=0;i<rawData.length;++i){outputArray[i]=rawData.charCodeAt(i);}
+  return outputArray;
+}
+
 init();
+document.addEventListener('DOMContentLoaded', function(){
+  var telInput = document.getElementById('login-tel');
+  var sifreInput = document.getElementById('login-sifre');
+  if(telInput) telInput.addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('login-sifre').focus(); });
+  if(sifreInput) sifreInput.addEventListener('keydown', function(e){ if(e.key==='Enter') girisYap(); });
+});
 </script>
 </body>
 </html>
- 
