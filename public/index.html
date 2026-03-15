@@ -641,6 +641,7 @@ function renderDetailBody(f) {
       eposta_gonderildi:'#0c447c', whatsapp_gonderildi:'#0c447c',
       ziyaret_randevu:'#0c447c', ziyaret_iptal:'#633806',
       telefon_geri_donus:'#0c447c', eposta_geri_donus:'#0c447c', whatsapp_geri_donus:'#0c447c',
+      iletisim_sonlandirildi:'#633806',
       beklemede:'#633806', cevap_yok:'#444441'
     };
     var kanalArr = Array.isArray(t.kanal) ? t.kanal : [t.kanal];
@@ -1020,15 +1021,13 @@ var SONUC_SECENEKLERI = {
   ],
   eposta: [
     { value:'eposta_gonderildi', label:'Gönderildi' },
-    { value:'eposta_yanit_olumlu', label:'Yanıt geldi — olumlu' },
-    { value:'eposta_yanit_olumsuz', label:'Yanıt geldi — olumsuz' },
-    { value:'eposta_geri_donus', label:'Geri dönüş bekleniyor' }
+    { value:'eposta_geri_donus', label:'Geri dönüş bekleniyor' },
+    { value:'iletisim_sonlandirildi', label:'İletişim MestMall tarafından sonlandırıldı' }
   ],
   whatsapp: [
     { value:'whatsapp_gonderildi', label:'Mesaj gönderildi' },
-    { value:'whatsapp_yanit_olumlu', label:'Yanıt geldi — olumlu' },
-    { value:'whatsapp_yanit_olumsuz', label:'Yanıt geldi — olumsuz' },
-    { value:'whatsapp_geri_donus', label:'Geri dönüş bekleniyor' }
+    { value:'whatsapp_geri_donus', label:'Geri dönüş bekleniyor' },
+    { value:'iletisim_sonlandirildi', label:'İletişim MestMall tarafından sonlandırıldı' }
   ],
   ziyaret: [
     { value:'ziyaret_randevu', label:'Randevu alındı' },
@@ -1089,7 +1088,8 @@ function sonucToDetay(sonuc, kanallar) {
     ziyaret_iptal: ikon + ' Ertelendi',
     telefon_geri_donus: ikon + ' Geri dönüş bekleniyor',
     eposta_geri_donus: ikon + ' Geri dönüş bekleniyor',
-    whatsapp_geri_donus: ikon + ' Geri dönüş bekleniyor'
+    whatsapp_geri_donus: ikon + ' Geri dönüş bekleniyor',
+    iletisim_sonlandirildi: 'İletişim sonlandırıldı'
   };
   return kisaEtiketler[sonuc] || null;
 }
