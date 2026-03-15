@@ -153,7 +153,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="login-err" id="login-err"></div>
       <div class="login-fg">
         <label>Cep telefonu</label>
-        <input type="tel" id="login-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14">
+        <input type="tel" id="login-tel" placeholder="(_ _ _) (_ _ _  _ _  _ _)" oninput="formatTel(this)" maxlength="14">
       </div>
       <div class="login-fg">
         <label>Şifre</label>
@@ -236,7 +236,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="modal-body">
       <div id="user-err" style="display:none" class="errmsg"></div>
       <div class="fg"><label>Ad Soyad</label><input id="u-ad" placeholder="Ad Soyad"></div>
-      <div class="fg"><label>Cep telefonu</label><input id="u-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
+      <div class="fg"><label>Cep telefonu</label><input id="u-tel" placeholder="(_ _ _) (_ _ _  _ _  _ _)" oninput="formatTel(this)" maxlength="14"></div>
       <div class="fg"><label>Rol</label>
         <select id="u-rol">
           <option value="kullanici">Kullanici</option>
@@ -272,7 +272,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg"><label>Firma adı *</label><input id="f-ad" placeholder="Firma adı girin"></div>
       <div class="frow">
         <div class="fg"><label>Web sitesi</label><input id="f-web" placeholder="www.firma.com"></div>
-        <div class="fg"><label>Telefon</label><input id="f-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
+        <div class="fg"><label>Telefon</label><input id="f-tel" placeholder="(_ _ _) (_ _ _  _ _  _ _)" oninput="formatTel(this)" maxlength="14"></div>
       </div>
       <div class="fg"><label>E-posta</label><input id="f-eposta" type="email" placeholder="info@firma.com"></div>
       <div class="frow">
@@ -314,13 +314,13 @@ textarea{resize:vertical;min-height:80px}
         <div class="fg" style="border-right:1px solid #f0f0f0;padding-right:12px">
           <label style="font-size:11px;font-weight:700;color:#1d9e75;margin-bottom:8px;display:block">GÖRÜŞÜLEN (Firma)</label>
           <div class="fg"><label>Ad Soyad</label><input id="t-kisi" placeholder="Ad Soyad, Unvan"></div>
-          <div class="fg"><label>Cep Tel</label><input id="t-kisi-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-kisi-tel" placeholder="(_ _ _) (_ _ _  _ _  _ _)" oninput="formatTel(this)" maxlength="14"></div>
           <div class="fg"><label>E-posta</label><input id="t-kisi-eposta" type="email" placeholder="ali@firma.com"></div>
         </div>
         <div class="fg">
           <label style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:8px;display:block">GÖRÜŞEN (Ekip)</label>
           <div class="fg"><label>Ad Soyad</label><input id="t-yapan-kisi" placeholder="Ad Soyad"></div>
-          <div class="fg"><label>Cep Tel</label><input id="t-yapan-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-yapan-tel" placeholder="(_ _ _) (_ _ _  _ _  _ _)" oninput="formatTel(this)" maxlength="14"></div>
           <div class="fg"><label>E-posta</label><input id="t-yapan-eposta" type="email" placeholder="siz@mestmall.com"></div>
         </div>
       </div>
@@ -1095,24 +1095,12 @@ function sonucToDetay(sonuc, kanallar) {
 
 
 function formatTel(input) {
-  var raw = input.value.replace(/\D/g, '');
-  if (raw.length > 10) raw = raw.slice(0, 10);
-  var formatted = '';
-  if (raw.length <= 3) {
-    formatted = raw.length ? '(' + raw : '';
-  } else if (raw.length <= 10) {
-    var alan = raw.slice(0, 3);
-    var rest = raw.slice(3);
-    var p1 = rest.slice(0, 3);
-    var p2 = rest.slice(3, 5);
-    var p3 = rest.slice(5, 7);
-    formatted = '(' + alan + ')';
-    if (p1) formatted += '(' + p1;
-    if (p2) formatted += ' ' + p2;
-    if (p3) formatted += ' ' + p3;
-    if (rest.length >= 3) formatted += ')';
-  }
-  input.value = formatted;
+  var raw = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+  var a = (raw + '          ').slice(0, 10).split('').map(function(c, i) {
+    return raw[i] || '_';
+  });
+  var result = '(' + a[0]+' '+a[1]+' '+a[2] + ') (' + a[3]+' '+a[4]+' '+a[5] + '  ' + a[6]+' '+a[7] + '  ' + a[8]+' '+a[9] + ')';
+  input.value = result;
 }
 
 function telTemizle(tel) {
