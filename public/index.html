@@ -341,6 +341,22 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
+
+<div class="overlay" id="randevu-sil-modal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head"><h2>Randevuyu Sil</h2><button class="xbtn" onclick="closeModal('randevu-sil-modal')">&times;</button></div>
+    <div class="modal-body">
+      <div id="randevu-sil-err" style="display:none" class="errmsg"></div>
+      <p style="font-size:13px;color:#6b7280;margin-bottom:14px">Randevu silinecek. Sebep temas gecmisine kaydedilecek.</p>
+      <div class="fg"><label>Silme sebebi *</label><textarea id="randevu-sil-sebep" placeholder="Neden iptal edildi veya gerceklestirilemedi..." style="min-height:80px"></textarea></div>
+      <div class="factions">
+        <button class="btn" onclick="closeModal('randevu-sil-modal')">Iptal</button>
+        <button class="btn btn-red" onclick="randevuSilOnayla()">Randevuyu Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="plan-modal">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-head"><h2>Sonraki iletişim planı</h2><button class="xbtn" onclick="closeModal('plan-modal')">&times;</button></div>
@@ -350,11 +366,11 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg"><label>Randevu tarihi *</label><input type="date" id="p-tarih"></div>
       <div class="fg">
         <label>İletişim kanalı</label>
-        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="p-kanal-telefon"> Telefon</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="p-kanal-eposta"> E-posta</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="p-kanal-whatsapp"> WhatsApp</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="p-kanal-ziyaret"> Ziyaret</label>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-telefon"> Telefon</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-eposta"> E-posta</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-whatsapp"> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap"><input type="checkbox" id="p-kanal-ziyaret"> Ziyaret</label>
         </div>
       </div>
       <div class="factions">
@@ -600,10 +616,11 @@ function renderDetailBody(f) {
         (t.yapan_kisi ? '<div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Gorusen: ' + esc(t.yapan_kisi) + (t.yapan_tel ? ' - ' + esc(t.yapan_tel) : '') + '</div>' : '') +
         '<div class="temas-ozet">' + esc(t.ozet) + '</div>' +
         (t.sonuc ? '<div style="font-size:11px;color:' + (sonucColors[t.sonuc]||'#444') + '">Sonuc: ' + (sonucLabels[t.sonuc]||t.sonuc) + '</div>' : '') +
+        (t.readonly ? '<div style="font-size:11px;color:#9ca3af;margin-top:4px">🔒 Sistem kaydi</div>' :
         '<div class="temas-acts">' +
           '<button class="tact" onclick="openTemasModal(\'' + t.id + '\')">Duzenle</button>' +
           '<button class="tact red" onclick="deleteTemas(\'' + t.id + '\')">Sil</button>' +
-        '</div>' +
+        '</div>') +
       '</div></div>';
   }).join('') : '<div class="empty-state">Henuz temas kaydi yok.<br><button class="btn btn-sm btn-green" style="margin-top:12px" onclick="openTemasModal(null)">Ilk temas kaydini ekle</button></div>';
 
@@ -614,7 +631,11 @@ function renderDetailBody(f) {
     (plan.kisi ? '<div class="irow" style="padding:6px 0"><span class="ilabel">Kiminle</span><span class="ival">' + esc(plan.kisi) + '</span></div>' : '') +
     '<div class="irow" style="padding:6px 0"><span class="ilabel">Randevu</span><span class="ival" style="font-weight:600;color:' + (sign ? sign.color : '#111') + '">' + plan.tarih + (sign && sign.label.includes('gecikti') ? ' Gecikti' : sign && sign.label.includes('bugun') ? ' Bugun!' : sign && sign.label.includes('yarin') ? ' Yarin!' : '') + '</span></div>' +
     (plan.kanal && plan.kanal.length ? '<div class="irow" style="padding:6px 0"><span class="ilabel">Kanal</span><span class="ival">' + plan.kanal.join(', ') + '</span></div>' : '') +
-    '</div><button class="btn btn-sm" onclick="openPlanModal()">Guncelle</button></div>'
+    '</div><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    '<button class="btn btn-sm" onclick="openPlanModal()">Guncelle</button>' +
+    '<button class="btn btn-sm btn-green" onclick="randevuGerceklesti()" style="background:#085041;border-color:#085041;color:#fff">✅ Gerceklesti</button>' +
+    '<button class="btn btn-sm btn-red" onclick="openRandevuSilModal()">🗑 Randevuyu Sil</button>' +
+    '</div></div>'
     : '<div class="empty-state" style="padding:20px"><p style="margin-bottom:12px">Henuz plan yok.</p><button class="btn btn-sm btn-green" onclick="openPlanModal()">+ Plan ekle</button></div>';
 
   document.getElementById('detail-body').innerHTML =
@@ -868,6 +889,69 @@ async function deleteUser(id) {
   if (!confirm('Bu kullaniciy silmek istediginize emin misiniz?')) return;
   await api('DELETE', 'users?id=' + id);
   loadUsers();
+}
+
+
+async function randevuGerceklesti() {
+  var f = DB.firmalar.find(function(x) { return x.id === DB.activeFirmaId; });
+  if (!f || !f.plan) return;
+  var bugun = new Date().toISOString().split('T')[0];
+  var ozet = 'Randevu gerceklesti' + (f.plan.kisi ? ' — ' + f.plan.kisi : '');
+  var data = {
+    firma_id: DB.activeFirmaId,
+    tarih: bugun,
+    kanal: f.plan.kanal && f.plan.kanal.length ? f.plan.kanal : ['telefon'],
+    kisi: f.plan.kisi || '',
+    kisi_tel: '', kisi_eposta: '',
+    yapan_kisi: SESSION.user ? SESSION.user.ad : '',
+    yapan_tel: '', yapan_eposta: '',
+    ozet: ozet,
+    sonuc: 'olumlu',
+    readonly: true
+  };
+  await api('POST', 'temas', data);
+  await api('PUT', 'extras?tip=plan&firmaId=' + DB.activeFirmaId, null);
+  var updated = await loadFirmaDetail(DB.activeFirmaId);
+  var idx = DB.firmalar.findIndex(function(f) { return f.id === DB.activeFirmaId; });
+  if (idx >= 0) DB.firmalar[idx] = updated;
+  renderDetailBody(updated);
+  renderGrid();
+  updatePlanBadge();
+}
+
+function openRandevuSilModal() {
+  document.getElementById('randevu-sil-sebep').value = '';
+  document.getElementById('randevu-sil-err').style.display = 'none';
+  document.getElementById('randevu-sil-modal').classList.add('open');
+}
+
+async function randevuSilOnayla() {
+  var sebep = document.getElementById('randevu-sil-sebep').value.trim();
+  var err = document.getElementById('randevu-sil-err');
+  if (!sebep) { err.textContent = 'Silme sebebi zorunludur.'; err.style.display = 'block'; return; }
+  var f = DB.firmalar.find(function(x) { return x.id === DB.activeFirmaId; });
+  var bugun = new Date().toISOString().split('T')[0];
+  var data = {
+    firma_id: DB.activeFirmaId,
+    tarih: bugun,
+    kanal: ['telefon'],
+    kisi: f && f.plan ? (f.plan.kisi || '') : '',
+    kisi_tel: '', kisi_eposta: '',
+    yapan_kisi: SESSION.user ? SESSION.user.ad : '',
+    yapan_tel: '', yapan_eposta: '',
+    ozet: 'Randevu silindi — Sebep: ' + sebep,
+    sonuc: 'olumsuz',
+    readonly: true
+  };
+  await api('POST', 'temas', data);
+  await api('PUT', 'extras?tip=plan&firmaId=' + DB.activeFirmaId, null);
+  closeModal('randevu-sil-modal');
+  var updated = await loadFirmaDetail(DB.activeFirmaId);
+  var idx = DB.firmalar.findIndex(function(f) { return f.id === DB.activeFirmaId; });
+  if (idx >= 0) DB.firmalar[idx] = updated;
+  renderDetailBody(updated);
+  renderGrid();
+  updatePlanBadge();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
