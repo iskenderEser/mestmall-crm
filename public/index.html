@@ -22,11 +22,9 @@ body{background:#f3f4f6;min-height:100vh}
 .btn-red:hover{background:#fcebeb}
 .btn-sm{padding:5px 10px;font-size:12px}
 .badge{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;border:1px solid transparent}
-.b-olumlu{background:#e1f5ee;color:#085041;border-color:#9fe1cb}
+.b-uyemiz{background:#e6f1fb;color:#0c447c;border-color:#b5d4f4}
 .b-beklemede{background:#faeeda;color:#633806;border-color:#fac775}
 .b-olumsuz{background:#fcebeb;color:#791f1f;border-color:#f7c1c1}
-.b-iletisimde{background:#e6f1fb;color:#0c447c;border-color:#b5d4f4}
-.b-baslanmadi{background:#f1efe8;color:#444441;border-color:#d3d1c7}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:16px 20px 0}
 .stat{background:#fff;border-radius:8px;padding:10px 14px;border:1px solid #f0f0f0}
 .stat-label{font-size:11px;color:#6b7280;margin-bottom:3px}
@@ -135,6 +133,12 @@ textarea{resize:vertical;min-height:80px}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats .stat:nth-child(3){display:none}
 }
+
+.tel-input-wrap{position:relative;display:flex;align-items:center}
+.tel-input-wrap input{padding-left:12px;letter-spacing:1px}
+
+.card-yeni{box-shadow:0 0 0 2px #1d9e75;border-color:#1d9e75}
+.yeni-badge{position:absolute;top:-6px;right:-6px;background:#1d9e75;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -149,7 +153,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="login-err" id="login-err"></div>
       <div class="login-fg">
         <label>Cep telefonu</label>
-        <input type="tel" id="login-tel" placeholder="05320000000">
+        <input type="tel" id="login-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14">
       </div>
       <div class="login-fg">
         <label>Şifre</label>
@@ -195,11 +199,9 @@ textarea{resize:vertical;min-height:80px}
   <div class="toolbar">
     <input id="search" class="search-input" placeholder="Firma veya kişi ara..." oninput="renderGrid()">
     <button class="filt active" data-d="tumu" onclick="setFilter(this)">Tümü</button>
-    <button class="filt" data-d="olumlu" onclick="setFilter(this)">Olumlu</button>
+    <button class="filt" data-d="uyemiz" onclick="setFilter(this)">Üyemiz</button>
     <button class="filt" data-d="beklemede" onclick="setFilter(this)">Beklemede</button>
-    <button class="filt" data-d="iletisimde" onclick="setFilter(this)">İletişimde</button>
-    <button class="filt" data-d="olumsuz" onclick="setFilter(this)">Ulaşılamadı</button>
-    <button class="filt" data-d="baslanmadi" onclick="setFilter(this)">Başlanmadı</button>
+    <button class="filt" data-d="olumsuz" onclick="setFilter(this)">Olumsuz</button>
     <button class="filt" data-d="planli" onclick="setFilter(this)" style="position:relative">📅 Planlı<span id="plan-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#a32d2d;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 4px;line-height:16px"></span></button>
   </div>
   <div class="grid" id="firma-grid"></div>
@@ -234,7 +236,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="modal-body">
       <div id="user-err" style="display:none" class="errmsg"></div>
       <div class="fg"><label>Ad Soyad</label><input id="u-ad" placeholder="Ad Soyad"></div>
-      <div class="fg"><label>Cep telefonu</label><input id="u-tel" placeholder="05320000000"></div>
+      <div class="fg"><label>Cep telefonu</label><input id="u-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
       <div class="fg"><label>Rol</label>
         <select id="u-rol">
           <option value="kullanici">Kullanici</option>
@@ -270,7 +272,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg"><label>Firma adı *</label><input id="f-ad" placeholder="Firma adı girin"></div>
       <div class="frow">
         <div class="fg"><label>Web sitesi</label><input id="f-web" placeholder="www.firma.com"></div>
-        <div class="fg"><label>Telefon</label><input id="f-tel" placeholder="0212 000 00 00"></div>
+        <div class="fg"><label>Telefon</label><input id="f-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
       </div>
       <div class="fg"><label>E-posta</label><input id="f-eposta" type="email" placeholder="info@firma.com"></div>
       <div class="frow">
@@ -280,11 +282,9 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg"><label>Ürün / firma notları</label><textarea id="f-not" placeholder="Ürünler, önemli notlar..."></textarea></div>
       <div class="fg"><label>Durum</label>
         <select id="f-durum">
-          <option value="baslanmadi">Başlanmadı</option>
-          <option value="iletisimde">İletişimde</option>
           <option value="beklemede">Beklemede</option>
-          <option value="olumlu">Olumlu</option>
-          <option value="olumsuz">Ulaşılamadı / Olumsuz</option>
+          <option value="uyemiz">Üyemiz</option>
+          <option value="olumsuz">Olumsuz</option>
         </select>
       </div>
       <div class="factions">
@@ -304,23 +304,23 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg">
         <label>Kanal (birden fazla seçilebilir)</label>
         <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-telefon"> Telefon</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-eposta"> E-posta</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-whatsapp"> WhatsApp</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-ziyaret"> Ziyaret</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-telefon" onchange="updateSonucOptions()"> Telefon</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-eposta" onchange="updateSonucOptions()"> E-posta</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-whatsapp" onchange="updateSonucOptions()"> WhatsApp</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer"><input type="checkbox" id="t-kanal-ziyaret" onchange="updateSonucOptions()"> Ziyaret</label>
         </div>
       </div>
       <div class="frow">
         <div class="fg" style="border-right:1px solid #f0f0f0;padding-right:12px">
           <label style="font-size:11px;font-weight:700;color:#1d9e75;margin-bottom:8px;display:block">GÖRÜŞÜLEN (Firma)</label>
           <div class="fg"><label>Ad Soyad</label><input id="t-kisi" placeholder="Ad Soyad, Unvan"></div>
-          <div class="fg"><label>Cep Tel</label><input id="t-kisi-tel" placeholder="0532 000 00 00"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-kisi-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
           <div class="fg"><label>E-posta</label><input id="t-kisi-eposta" type="email" placeholder="ali@firma.com"></div>
         </div>
         <div class="fg">
           <label style="font-size:11px;font-weight:700;color:#6b7280;margin-bottom:8px;display:block">GÖRÜŞEN (Ekip)</label>
           <div class="fg"><label>Ad Soyad</label><input id="t-yapan-kisi" placeholder="Ad Soyad"></div>
-          <div class="fg"><label>Cep Tel</label><input id="t-yapan-tel" placeholder="0532 000 00 00"></div>
+          <div class="fg"><label>Cep Tel</label><input id="t-yapan-tel" placeholder="(532)(433 31 45)" oninput="formatTel(this)" maxlength="14"></div>
           <div class="fg"><label>E-posta</label><input id="t-yapan-eposta" type="email" placeholder="siz@mestmall.com"></div>
         </div>
       </div>
@@ -328,9 +328,6 @@ textarea{resize:vertical;min-height:80px}
       <div class="fg"><label>Sonuç</label>
         <select id="t-sonuc">
           <option value="beklemede">Beklemede</option>
-          <option value="olumlu">Olumlu</option>
-          <option value="cevap_yok">Cevap yok</option>
-          <option value="olumsuz">Olumsuz</option>
         </select>
       </div>
       <div class="factions">
@@ -376,6 +373,22 @@ textarea{resize:vertical;min-height:80px}
       <div class="factions">
         <button class="btn" onclick="closeModal('plan-modal')">İptal</button>
         <button class="btn btn-green" onclick="savePlan()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="overlay" id="yorum-modal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head"><h2 id="yorum-baslik">Gorus / Oneri / Soru</h2><button class="xbtn" onclick="closeModal('yorum-modal')">&times;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="yorum-tip" value="gorus">
+      <div id="yorum-err" style="display:none" class="errmsg"></div>
+      <div class="fg"><label>Notunuz *</label><textarea id="yorum-metin" placeholder="Gorusunuzu, oneriniizi veya sorunuzu yazin..." style="min-height:100px"></textarea></div>
+      <div class="factions">
+        <button class="btn" onclick="closeModal('yorum-modal')">Iptal</button>
+        <button class="btn btn-green" onclick="saveYorum()">Kaydet</button>
       </div>
     </div>
   </div>
@@ -475,6 +488,7 @@ async function init() {
     renderGrid();
     updatePlanBadge();
     registerPush();
+    loadGorulduDurum();
   } catch(e) {
     if (e.message.includes('401') || e.message.includes('Giriş')) {
       localStorage.removeItem('crm_token');
@@ -497,7 +511,7 @@ async function loadFirmaDetail(id) {
 }
 
 function badge(durum) {
-  var labels = { olumlu:'Olumlu', beklemede:'Beklemede', olumsuz:'Ulaşılamadı', iletisimde:'İletişimde', baslanmadi:'Başlanmadı' };
+  var labels = { uyemiz:'Üyemiz', beklemede:'Beklemede', olumsuz:'Olumsuz' };
   return '<span class="badge b-' + durum + '">' + (labels[durum] || durum) + '</span>';
 }
 
@@ -505,14 +519,13 @@ function renderStats() {
   if (SESSION.user) { var el = document.getElementById('user-ad'); if (el) el.textContent = SESSION.user.ad; }
   var btnUsers = document.getElementById('btn-users');
   if (btnUsers) btnUsers.style.display = SESSION.user && SESSION.user.rol === 'admin' ? 'inline-flex' : 'none';
-  var counts = { olumlu:0, beklemede:0, iletisimde:0, olumsuz:0, baslanmadi:0 };
-  DB.firmalar.forEach(function(f) { counts[f.durum]++; });
+  var counts = { uyemiz:0, beklemede:0, olumsuz:0 };
+  DB.firmalar.forEach(function(f) { if(counts[f.durum] !== undefined) counts[f.durum]++; });
   document.getElementById('stats-row').innerHTML =
     '<div class="stat"><div class="stat-label">Toplam</div><div class="stat-val">' + DB.firmalar.length + '</div></div>' +
-    '<div class="stat"><div class="stat-label">Olumlu</div><div class="stat-val" style="color:#085041">' + counts.olumlu + '</div></div>' +
+    '<div class="stat"><div class="stat-label">Üyemiz</div><div class="stat-val" style="color:#0c447c">' + counts.uyemiz + '</div></div>' +
     '<div class="stat"><div class="stat-label">Beklemede</div><div class="stat-val" style="color:#633806">' + counts.beklemede + '</div></div>' +
-    '<div class="stat"><div class="stat-label">İletişimde</div><div class="stat-val" style="color:#0c447c">' + counts.iletisimde + '</div></div>' +
-    '<div class="stat"><div class="stat-label">Ulaşılamadı</div><div class="stat-val" style="color:#791f1f">' + counts.olumsuz + '</div></div>';
+    '<div class="stat"><div class="stat-label">Olumsuz</div><div class="stat-val" style="color:#791f1f">' + counts.olumsuz + '</div></div>';
 }
 
 function setFilter(btn) {
@@ -566,8 +579,22 @@ function renderGrid() {
     if (f.telefon) { var t = document.createElement('div'); t.className = 'card-meta'; t.textContent = f.telefon; div.appendChild(t); }
     if (f.son_temas) { var s = document.createElement('div'); s.className = 'card-meta'; s.style.marginTop = '4px'; s.textContent = 'Son temas: ' + f.son_temas; div.appendChild(s); }
     if (f.urun_notlari) { var n = document.createElement('div'); n.className = 'card-not'; n.textContent = f.urun_notlari; div.appendChild(n); }
+    if (f.durum === 'beklemede' && f.son_temas_detay) {
+      var dt = document.createElement('div');
+      dt.style.cssText = 'margin-top:6px;font-size:11px;color:#633806;background:#faeeda;border-radius:6px;padding:3px 8px;display:inline-block';
+      dt.textContent = f.son_temas_detay;
+      div.appendChild(dt);
+    }
     var sign = planSign(f);
     if (sign) { var p = document.createElement('div'); p.style.cssText = 'margin-top:8px;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;background:' + sign.bg + ';color:' + sign.color; p.textContent = sign.label; div.appendChild(p); }
+    if (DB.yeniFirmalar && DB.yeniFirmalar[f.id]) {
+      div.classList.add('card-yeni');
+      div.style.position = 'relative';
+      var yeniEl = document.createElement('span');
+      yeniEl.className = 'yeni-badge';
+      yeniEl.textContent = 'Yeni';
+      div.appendChild(yeniEl);
+    }
     grid.appendChild(div);
   });
 }
@@ -575,6 +602,8 @@ function renderGrid() {
 async function showDetail(id) {
   showPage('detail');
   document.getElementById('det-title').textContent = 'Yükleniyor...';
+  api('POST', 'extras?tip=goruldu&firmaId=' + id, {}).catch(function(){});
+  if (DB.yeniFirmalar) delete DB.yeniFirmalar[id];
   document.getElementById('det-badge').innerHTML = '';
   document.getElementById('detail-body').innerHTML = '<div class="empty-state">Yükleniyor...</div>';
   var f = await loadFirmaDetail(id);
@@ -603,8 +632,22 @@ function renderDetailBody(f) {
   var temasHtml = temasList.length ? temasList.map(function(t) {
     var icons = { telefon:'📞', eposta:'✉', whatsapp:'💬', ziyaret:'🤝' };
     var cls = { telefon:'ti-telefon', eposta:'ti-eposta', whatsapp:'ti-whatsapp', ziyaret:'ti-ziyaret' };
-    var sonucLabels = { olumlu:'Olumlu', beklemede:'Beklemede', cevap_yok:'Cevap yok', olumsuz:'Olumsuz' };
-    var sonucColors = { olumlu:'#085041', beklemede:'#633806', cevap_yok:'#444441', olumsuz:'#791f1f' };
+    var sonucLabels = {
+      telefon_olumlu:'Telefon — Olumlu', telefon_olumsuz:'Telefon — Olumsuz', telefon_kararsiz:'Telefon — Kararsız',
+      telefon_asistan:'Telefon — Asistanla', telefon_cevap_yok:'Telefon — Cevap yok',
+      eposta_gonderildi:'E-posta — Gönderildi', eposta_yanit_olumlu:'E-posta — Olumlu', eposta_yanit_olumsuz:'E-posta — Olumsuz',
+      whatsapp_gonderildi:'WhatsApp — Gönderildi', whatsapp_yanit_olumlu:'WhatsApp — Olumlu', whatsapp_yanit_olumsuz:'WhatsApp — Olumsuz',
+      ziyaret_randevu:'Ziyaret — Randevu alındı', ziyaret_olumlu:'Ziyaret — Olumlu', ziyaret_olumsuz:'Ziyaret — Olumsuz', ziyaret_iptal:'Ziyaret — İptal/Ertelendi',
+      beklemede:'Beklemede', olumlu:'Olumlu', olumsuz:'Olumsuz', cevap_yok:'Cevap yok'
+    };
+    var sonucColors = {
+      telefon_olumlu:'#085041', eposta_yanit_olumlu:'#085041', whatsapp_yanit_olumlu:'#085041', ziyaret_olumlu:'#085041', olumlu:'#085041',
+      telefon_olumsuz:'#791f1f', eposta_yanit_olumsuz:'#791f1f', whatsapp_yanit_olumsuz:'#791f1f', ziyaret_olumsuz:'#791f1f', olumsuz:'#791f1f',
+      telefon_kararsiz:'#633806', telefon_asistan:'#633806', telefon_cevap_yok:'#444441',
+      eposta_gonderildi:'#0c447c', whatsapp_gonderildi:'#0c447c',
+      ziyaret_randevu:'#0c447c', ziyaret_iptal:'#633806',
+      beklemede:'#633806', cevap_yok:'#444441'
+    };
     var kanalArr = Array.isArray(t.kanal) ? t.kanal : [t.kanal];
     var ilkKanal = kanalArr[0] || 'telefon';
     var kanalBadgeler = kanalArr.map(function(k) { return '<span class="temas-kanal-badge">' + k + '</span>'; }).join(' ');
@@ -621,6 +664,7 @@ function renderDetailBody(f) {
           '<button class="tact" onclick="openTemasModal(\'' + t.id + '\')">Duzenle</button>' +
           '<button class="tact red" onclick="deleteTemas(\'' + t.id + '\')">Sil</button>' +
         '</div>') +
+        renderYorumZinciri(t) +
       '</div></div>';
   }).join('') : '<div class="empty-state">Henuz temas kaydi yok.<br><button class="btn btn-sm btn-green" style="margin-top:12px" onclick="openTemasModal(null)">Ilk temas kaydini ekle</button></div>';
 
@@ -672,11 +716,11 @@ function openFirmaModal(id) {
     document.getElementById('f-ref').value = f.referans_kisi || '';
     document.getElementById('f-odak').value = f.odak_kisi || '';
     document.getElementById('f-not').value = f.urun_notlari || '';
-    document.getElementById('f-durum').value = f.durum || 'baslanmadi';
+    document.getElementById('f-durum').value = f.durum || 'beklemede';
   } else {
     document.getElementById('fmodal-title').textContent = 'Yeni firma ekle';
     ['f-ad','f-web','f-tel','f-eposta','f-ref','f-odak','f-not'].forEach(function(id) { document.getElementById(id).value = ''; });
-    document.getElementById('f-durum').value = 'baslanmadi';
+    document.getElementById('f-durum').value = 'beklemede';
   }
   document.getElementById('firma-modal').classList.add('open');
 }
@@ -726,7 +770,8 @@ function openTemasModal(id) {
     document.getElementById('t-yapan-tel').value = t.yapan_tel || saved.tel || '';
     document.getElementById('t-yapan-eposta').value = t.yapan_eposta || saved.eposta || '';
     document.getElementById('t-ozet').value = t.ozet;
-    document.getElementById('t-sonuc').value = t.sonuc || 'beklemede';
+    updateSonucOptions();
+    document.getElementById('t-sonuc').value = t.sonuc || (document.getElementById('t-sonuc').options[0] ? document.getElementById('t-sonuc').options[0].value : 'beklemede');
   } else {
     document.getElementById('tmodal-title').textContent = 'Yeni temas kaydi';
     document.getElementById('t-tarih').value = new Date().toISOString().split('T')[0];
@@ -734,7 +779,7 @@ function openTemasModal(id) {
     document.getElementById('t-yapan-kisi').value = SESSION.user ? SESSION.user.ad : (saved.kisi || '');
     document.getElementById('t-yapan-tel').value = saved.tel || '';
     document.getElementById('t-yapan-eposta').value = saved.eposta || '';
-    document.getElementById('t-sonuc').value = 'beklemede';
+    updateSonucOptions();
   }
   document.getElementById('temas-modal').classList.add('open');
 }
@@ -769,8 +814,22 @@ async function saveTemas() {
     var firma = DB.firmalar.find(function(f) { return f.id === DB.activeFirmaId; });
     if (firma && (!firma.son_temas || data.tarih > firma.son_temas)) firma.son_temas = data.tarih;
   }
-  var f = DB.firmalar.find(function(x) { return x.id === DB.activeFirmaId; });
-  if (f) renderDetailBody(f);
+  var firmaUpdated = await loadFirmaDetail(DB.activeFirmaId);
+  var yeniDurum = sonucToDurum(data.sonuc, data.kanal);
+  var yeniDetay = sonucToDetay(data.sonuc, data.kanal);
+  var firmaGuncel = { ...firmaUpdated };
+  firmaGuncel.durum = yeniDurum;
+  if (yeniDurum === 'beklemede' && yeniDetay) {
+    firmaGuncel.son_temas_detay = yeniDetay;
+  } else {
+    firmaGuncel.son_temas_detay = null;
+  }
+  firmaUpdated = await api('PUT', 'firma/' + DB.activeFirmaId, firmaGuncel);
+  var idx2 = DB.firmalar.findIndex(function(f) { return f.id === DB.activeFirmaId; });
+  if (idx2 >= 0) DB.firmalar[idx2] = firmaUpdated;
+  document.getElementById('det-title').textContent = firmaUpdated.ad;
+  document.getElementById('det-badge').innerHTML = badge(firmaUpdated.durum);
+  renderDetailBody(firmaUpdated);
   renderGrid();
   closeModal('temas-modal');
 }
@@ -952,6 +1011,190 @@ async function randevuSilOnayla() {
   renderDetailBody(updated);
   renderGrid();
   updatePlanBadge();
+}
+
+
+var SONUC_SECENEKLERI = {
+  telefon: [
+    { value:'telefon_olumlu', label:'Olumlu' },
+    { value:'telefon_olumsuz', label:'Olumsuz' },
+    { value:'telefon_kararsiz', label:'Kararsız' },
+    { value:'telefon_asistan', label:'Asistanla görüşüldü' },
+    { value:'telefon_cevap_yok', label:'Cevap yok' }
+  ],
+  eposta: [
+    { value:'eposta_gonderildi', label:'Gönderildi' },
+    { value:'eposta_yanit_olumlu', label:'Yanıt geldi — olumlu' },
+    { value:'eposta_yanit_olumsuz', label:'Yanıt geldi — olumsuz' }
+  ],
+  whatsapp: [
+    { value:'whatsapp_gonderildi', label:'Mesaj gönderildi' },
+    { value:'whatsapp_yanit_olumlu', label:'Yanıt geldi — olumlu' },
+    { value:'whatsapp_yanit_olumsuz', label:'Yanıt geldi — olumsuz' }
+  ],
+  ziyaret: [
+    { value:'ziyaret_randevu', label:'Randevu alındı' },
+    { value:'ziyaret_olumlu', label:'Ziyaret gerçekleşti — olumlu' },
+    { value:'ziyaret_olumsuz', label:'Ziyaret gerçekleşti — olumsuz' },
+    { value:'ziyaret_iptal', label:'Ziyaret iptal / ertelendi' }
+  ]
+};
+
+function updateSonucOptions() {
+  var kanallar = ['telefon','eposta','whatsapp','ziyaret'].filter(function(k) {
+    return document.getElementById('t-kanal-' + k).checked;
+  });
+  var select = document.getElementById('t-sonuc');
+  var mevcutDeger = select.value;
+  select.innerHTML = '';
+  var seenValues = {};
+  kanallar.forEach(function(k) {
+    (SONUC_SECENEKLERI[k] || []).forEach(function(s) {
+      if (!seenValues[s.value]) {
+        seenValues[s.value] = true;
+        var opt = document.createElement('option');
+        opt.value = s.value;
+        opt.textContent = s.label;
+        select.appendChild(opt);
+      }
+    });
+  });
+  if (!select.options.length) {
+    var opt = document.createElement('option');
+    opt.value = 'beklemede';
+    opt.textContent = 'Beklemede';
+    select.appendChild(opt);
+  }
+  select.value = mevcutDeger;
+  if (!select.value && select.options.length) select.value = select.options[0].value;
+}
+
+function sonucToDurum(sonuc, kanallar) {
+  var olumluSonuclar = ['telefon_olumlu','eposta_yanit_olumlu','whatsapp_yanit_olumlu','ziyaret_olumlu'];
+  var olumsuzSonuclar = ['telefon_olumsuz','eposta_yanit_olumsuz','whatsapp_yanit_olumsuz','ziyaret_olumsuz'];
+  if (olumluSonuclar.indexOf(sonuc) >= 0) return 'uyemiz';
+  if (olumsuzSonuclar.indexOf(sonuc) >= 0) return 'olumsuz';
+  return 'beklemede';
+}
+
+function sonucToDetay(sonuc, kanallar) {
+  var ikonlar = { telefon:'📞', eposta:'✉', whatsapp:'💬', ziyaret:'🤝' };
+  var ilkKanal = Array.isArray(kanallar) ? kanallar[0] : kanallar;
+  var ikon = ikonlar[ilkKanal] || '📞';
+  var kisaEtiketler = {
+    telefon_kararsiz: ikon + ' Kararsız',
+    telefon_asistan: ikon + ' Asistanla',
+    telefon_cevap_yok: ikon + ' Cevap yok',
+    eposta_gonderildi: ikon + ' Gönderildi',
+    whatsapp_gonderildi: ikon + ' Gönderildi',
+    ziyaret_randevu: ikon + ' Randevu alındı',
+    ziyaret_iptal: ikon + ' Ertelendi'
+  };
+  return kisaEtiketler[sonuc] || null;
+}
+
+
+function formatTel(input) {
+  var raw = input.value.replace(/\D/g, '');
+  if (raw.length > 10) raw = raw.slice(0, 10);
+  var formatted = '';
+  if (raw.length <= 3) {
+    formatted = raw.length ? '(' + raw : '';
+  } else if (raw.length <= 10) {
+    var alan = raw.slice(0, 3);
+    var rest = raw.slice(3);
+    var p1 = rest.slice(0, 3);
+    var p2 = rest.slice(3, 5);
+    var p3 = rest.slice(5, 7);
+    formatted = '(' + alan + ')';
+    if (p1) formatted += '(' + p1;
+    if (p2) formatted += ' ' + p2;
+    if (p3) formatted += ' ' + p3;
+    if (rest.length >= 3) formatted += ')';
+  }
+  input.value = formatted;
+}
+
+function telTemizle(tel) {
+  return tel ? tel.replace(/\D/g, '') : '';
+}
+
+function renderYorumZinciri(t) {
+  var yorumlar = t.yorumlar || [];
+  var benimId = SESSION.user ? SESSION.user.id : null;
+  var ilkYazanId = t.olusturan_id;
+  var html = '<div style="border-top:1px solid #f3f4f6;margin-top:8px;padding-top:8px">';
+
+  // Mevcut yorumlar
+  yorumlar.forEach(function(y) {
+    var renk = y.tip === 'cevap' ? '#0c447c' : '#633806';
+    var bg = y.tip === 'cevap' ? '#e6f1fb' : '#faeeda';
+    var baslik = y.tip === 'cevap' ? 'Yorum/Cevap' : 'Gorus/Oneri/Soru';
+    html += '<div style="margin-bottom:8px;padding:8px 10px;background:' + bg + ';border-radius:8px;border-left:3px solid ' + renk + '">' +
+      '<div style="font-size:11px;color:' + renk + ';font-weight:600;margin-bottom:4px">' + baslik + ' — ' + esc(y.yazan_ad) + ' <span style="font-weight:400;color:#9ca3af">' + y.tarih.slice(0,10) + '</span></div>' +
+      '<div style="font-size:13px;color:#111">' + esc(y.metin) + '</div>' +
+      '</div>';
+  });
+
+  // Notum Var butonu - goruntuleyen ilk notu yazan degil ise ve gorus yoksa
+  var gorusVar = yorumlar.some(function(y) { return y.tip === 'gorus'; });
+  var cevapVar = yorumlar.some(function(y) { return y.tip === 'cevap'; });
+
+  if (!gorusVar && benimId && benimId !== ilkYazanId) {
+    html += '<button class="tact" style="color:#1d9e75;font-size:12px" onclick="notumVar(\'' + t.id + '\')">+ Notum Var</button>';
+  }
+
+  // Yorum/Cevap - sadece ilk notu yazan ve gorus varsa, cevap yoksa
+  if (gorusVar && !cevapVar && benimId && benimId === ilkYazanId) {
+    html += '<div style="margin-top:4px;font-size:11px;color:#a32d2d;font-weight:600">Yorum/Cevap Bildiriniz</div>';
+    html += '<button class="tact" style="color:#1d9e75;font-size:12px" onclick="yorumCevapVer(\'' + t.id + '\')">+ Yorum/Cevap</button>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+var aktifYorumTemasId = null;
+
+function notumVar(temasId) {
+  aktifYorumTemasId = temasId;
+  document.getElementById('yorum-tip').value = 'gorus';
+  document.getElementById('yorum-metin').value = '';
+  document.getElementById('yorum-err').style.display = 'none';
+  document.getElementById('yorum-baslik').textContent = 'Gorus / Oneri / Soru';
+  document.getElementById('yorum-modal').classList.add('open');
+}
+
+function yorumCevapVer(temasId) {
+  aktifYorumTemasId = temasId;
+  document.getElementById('yorum-tip').value = 'cevap';
+  document.getElementById('yorum-metin').value = '';
+  document.getElementById('yorum-err').style.display = 'none';
+  document.getElementById('yorum-baslik').textContent = 'Yorum / Cevap';
+  document.getElementById('yorum-modal').classList.add('open');
+}
+
+async function saveYorum() {
+  var metin = document.getElementById('yorum-metin').value.trim();
+  var tip = document.getElementById('yorum-tip').value;
+  var err = document.getElementById('yorum-err');
+  if (!metin) { err.textContent = 'Metin zorunludur.'; err.style.display = 'block'; return; }
+  try {
+    await api('POST', 'temas?id=' + aktifYorumTemasId + '&action=yorum', { metin: metin, tip: tip });
+    closeModal('yorum-modal');
+    var updated = await loadFirmaDetail(DB.activeFirmaId);
+    renderDetailBody(updated);
+  } catch(e) { err.textContent = 'Hata: ' + e.message; err.style.display = 'block'; }
+}
+
+async function loadGorulduDurum() {
+  try {
+    var firmaIds = DB.firmalar.map(function(f) { return f.id; });
+    if (!firmaIds.length) return;
+    var sonuc = await api('POST', 'extras?tip=goruldu_durum', { firmaIds: firmaIds });
+    DB.yeniFirmalar = sonuc;
+    renderGrid();
+  } catch(e) { console.log('Goruldu durum hatasi:', e); }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
