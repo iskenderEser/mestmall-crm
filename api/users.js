@@ -26,8 +26,8 @@ module.exports = async function handler(req, res) {
       return res.status(429).json({ error: `Çok fazla hatalı deneme. ${kalanDakika} dakika bekleyin.` });
     }
     const userIds = await kv.smembers('user:ids');
-    const users = await Promise.all(userIds.map(id => kv.get(`user:${id}`)));
-    const user = users.filter(Boolean).find(u => u.cep_tel.replace(/\s/g, '') === temizTel);
+    const users = await Promise.all(userIds.map(id => kv.get(`user:${id}`)))
+    const user = users.filter(Boolean).find(u => u.cep_tel.replace(/\D/g, '').replace(/^0/, '') === temizTel.replace(/^0/, ''));
     if (!user || user.sifre_hash !== hashSifre(sifre)) {
       await kv.set(denemeKey, { sayi: (deneme.sayi || 0) + 1, son: simdi });
       return res.status(401).json({ error: 'Cep telefonu veya şifre hatalı.' });
