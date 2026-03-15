@@ -1017,7 +1017,8 @@ var SONUC_SECENEKLERI = {
     { value:'telefon_kararsiz', label:'Kararsız' },
     { value:'telefon_asistan', label:'Asistanla görüşüldü' },
     { value:'telefon_cevap_yok', label:'Cevap yok' },
-    { value:'telefon_geri_donus', label:'Geri dönüş bekleniyor' }
+    { value:'telefon_geri_donus', label:'Geri dönüş bekleniyor' },
+    { value:'iletisim_sonlandirildi', label:'İletişim MestMall tarafından sonlandırıldı' }
   ],
   eposta: [
     { value:'eposta_gonderildi', label:'Gönderildi' },
@@ -1068,7 +1069,7 @@ function updateSonucOptions() {
 
 function sonucToDurum(sonuc, kanallar) {
   var olumluSonuclar = ['telefon_olumlu','eposta_yanit_olumlu','whatsapp_yanit_olumlu','ziyaret_olumlu'];
-  var olumsuzSonuclar = ['telefon_olumsuz','eposta_yanit_olumsuz','whatsapp_yanit_olumsuz','ziyaret_olumsuz'];
+  var olumsuzSonuclar = ['telefon_olumsuz','ziyaret_olumsuz','iletisim_sonlandirildi'];
   if (olumluSonuclar.indexOf(sonuc) >= 0) return 'uyemiz';
   if (olumsuzSonuclar.indexOf(sonuc) >= 0) return 'olumsuz';
   return 'beklemede';
