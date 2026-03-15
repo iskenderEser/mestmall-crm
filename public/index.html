@@ -137,8 +137,7 @@ textarea{resize:vertical;min-height:80px}
 .tel-input-wrap{position:relative;display:flex;align-items:center}
 .tel-input-wrap input{padding-left:12px;letter-spacing:1px}
 
-.card-yeni{box-shadow:0 0 0 2px #1d9e75;border-color:#1d9e75}
-.yeni-badge{position:absolute;top:-6px;right:-6px;background:#1d9e75;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;white-space:nowrap}
+.card-yeni{box-shadow:0 4px 12px rgba(0,0,0,0.12)}
 </style>
 </head>
 <body>
@@ -417,7 +416,7 @@ async function girisYap() {
     var res = await fetch('/api/users?action=login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cep_tel: tel, sifre: sifre })
+      body: JSON.stringify({ cep_tel: tel.replace(/\s/g, ''), sifre: sifre })
     });
     var data = await res.json();
     if (!res.ok) { err.textContent = data.error || 'Hata oluştu.'; err.style.display = 'block'; return; }
@@ -589,11 +588,6 @@ function renderGrid() {
     if (sign) { var p = document.createElement('div'); p.style.cssText = 'margin-top:8px;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;background:' + sign.bg + ';color:' + sign.color; p.textContent = sign.label; div.appendChild(p); }
     if (DB.yeniFirmalar && DB.yeniFirmalar[f.id]) {
       div.classList.add('card-yeni');
-      div.style.position = 'relative';
-      var yeniEl = document.createElement('span');
-      yeniEl.className = 'yeni-badge';
-      yeniEl.textContent = 'Yeni';
-      div.appendChild(yeniEl);
     }
     grid.appendChild(div);
   });
