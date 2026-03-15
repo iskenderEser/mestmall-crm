@@ -640,6 +640,7 @@ function renderDetailBody(f) {
       telefon_kararsiz:'#633806', telefon_asistan:'#633806', telefon_cevap_yok:'#444441',
       eposta_gonderildi:'#0c447c', whatsapp_gonderildi:'#0c447c',
       ziyaret_randevu:'#0c447c', ziyaret_iptal:'#633806',
+      telefon_geri_donus:'#0c447c', eposta_geri_donus:'#0c447c', whatsapp_geri_donus:'#0c447c',
       beklemede:'#633806', cevap_yok:'#444441'
     };
     var kanalArr = Array.isArray(t.kanal) ? t.kanal : [t.kanal];
@@ -1014,17 +1015,20 @@ var SONUC_SECENEKLERI = {
     { value:'telefon_olumsuz', label:'Olumsuz' },
     { value:'telefon_kararsiz', label:'Kararsız' },
     { value:'telefon_asistan', label:'Asistanla görüşüldü' },
-    { value:'telefon_cevap_yok', label:'Cevap yok' }
+    { value:'telefon_cevap_yok', label:'Cevap yok' },
+    { value:'telefon_geri_donus', label:'Geri dönüş bekleniyor' }
   ],
   eposta: [
     { value:'eposta_gonderildi', label:'Gönderildi' },
     { value:'eposta_yanit_olumlu', label:'Yanıt geldi — olumlu' },
-    { value:'eposta_yanit_olumsuz', label:'Yanıt geldi — olumsuz' }
+    { value:'eposta_yanit_olumsuz', label:'Yanıt geldi — olumsuz' },
+    { value:'eposta_geri_donus', label:'Geri dönüş bekleniyor' }
   ],
   whatsapp: [
     { value:'whatsapp_gonderildi', label:'Mesaj gönderildi' },
     { value:'whatsapp_yanit_olumlu', label:'Yanıt geldi — olumlu' },
-    { value:'whatsapp_yanit_olumsuz', label:'Yanıt geldi — olumsuz' }
+    { value:'whatsapp_yanit_olumsuz', label:'Yanıt geldi — olumsuz' },
+    { value:'whatsapp_geri_donus', label:'Geri dönüş bekleniyor' }
   ],
   ziyaret: [
     { value:'ziyaret_randevu', label:'Randevu alındı' },
@@ -1082,7 +1086,10 @@ function sonucToDetay(sonuc, kanallar) {
     eposta_gonderildi: ikon + ' Gönderildi',
     whatsapp_gonderildi: ikon + ' Gönderildi',
     ziyaret_randevu: ikon + ' Randevu alındı',
-    ziyaret_iptal: ikon + ' Ertelendi'
+    ziyaret_iptal: ikon + ' Ertelendi',
+    telefon_geri_donus: ikon + ' Geri dönüş bekleniyor',
+    eposta_geri_donus: ikon + ' Geri dönüş bekleniyor',
+    whatsapp_geri_donus: ikon + ' Geri dönüş bekleniyor'
   };
   return kisaEtiketler[sonuc] || null;
 }
