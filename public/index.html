@@ -969,7 +969,7 @@ async function randevuGerceklesti() {
     yapan_kisi: SESSION.user ? SESSION.user.ad : '',
     yapan_tel: '', yapan_eposta: '',
     ozet: ozet,
-    sonuc: 'olumlu',
+    sonuc: 'gerçekleşti',
     readonly: true
   };
   await api('POST', 'temas', data);
