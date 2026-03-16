@@ -31,7 +31,7 @@ async function sendYorumBildirimi(temas, yorumYazan, tip) {
         },
         body: JSON.stringify({
           from: 'MestMall CRM <onboarding@resend.dev>',
-          to: process.env.NOTIFY_EMAIL,
+          to: temas.yapan_eposta || process.env.NOTIFY_EMAIL,
           subject: baslik + ' — MestMall CRM',
           text: yorumYazan + ' bir temas kaydina ' + baslik + ' ekledi.\n\nMestMall CRM: ' + (process.env.APP_URL || 'https://mestmall-crm.vercel.app')
         })
