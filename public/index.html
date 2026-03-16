@@ -138,6 +138,9 @@ textarea{resize:vertical;min-height:80px}
 .tel-input-wrap input{padding-left:12px;letter-spacing:1px}
 
 .card-yeni{box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+.card-uyari{position:relative}
+.uyari-ikon{position:absolute;top:-8px;right:-8px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:18px solid #e24b4a;display:flex;align-items:flex-end;justify-content:center}
+.uyari-ikon::after{content:'!';position:absolute;bottom:1px;color:#fff;font-size:11px;font-weight:700;line-height:1}
 </style>
 </head>
 <body>
@@ -584,10 +587,13 @@ function renderGrid() {
       dt.textContent = f.son_temas_detay;
       div.appendChild(dt);
     }
-    var sign = planSign(f);
+   var sign = planSign(f);
     if (sign) { var p = document.createElement('div'); p.style.cssText = 'margin-top:8px;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;background:' + sign.bg + ';color:' + sign.color; p.textContent = sign.label; div.appendChild(p); }
     if (DB.yeniFirmalar && DB.yeniFirmalar[f.id]) {
-      div.classList.add('card-yeni');
+      div.classList.add('card-uyari');
+      var uyariEl = document.createElement('div');
+      uyariEl.className = 'uyari-ikon';
+      div.appendChild(uyariEl);
     }
     grid.appendChild(div);
   });
